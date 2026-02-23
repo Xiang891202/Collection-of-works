@@ -1,11 +1,12 @@
-<script setup lang="ts"></script>
-
 <template>
-  <h1>You did it!</h1>
-  <p>
-    Visit <a href="https://vuejs.org/" target="_blank" rel="noopener">vuejs.org</a> to read the
-    documentation
-  </p>
+  <Home />
 </template>
 
-<style scoped></style>
+<script setup>
+import Home from './views/Home.vue';
+</script>
+
+<style>
+/* 可在此引入全域字體或基礎樣式 */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+</style>

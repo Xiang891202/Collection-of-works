@@ -71,3 +71,19 @@ npm run test:e2e -- --debug
 ```sh
 npm run lint
 ```
+
+
+<!-- src/
+├── views/
+│   └── Home.vue                 # 首頁整合所有區塊
+├── components/
+│   ├── Header.vue                # 導覽列（含 Logo、導覽項目、ModeToggle）
+│   ├── ModeToggle.vue            # 模式切換按鈕（展示版 / 專業版）
+│   ├── HeroSection.vue           # 首屏大標題區
+│   ├── ProjectCard.vue           # 單一專案卡片（支援模式切換文字）
+│   ├── ProjectList.vue           # 專案列表（v-for 渲染 ProjectCard）
+│   ├── AboutSection.vue          # 個人資訊區（技能、證照、經歷、聯絡方式）
+│   └── Footer.vue                # 頁尾（版權、簡短聯絡、社群連結）
+├── data/
+│   └── projects.js               # 前端假資料（專案列表）
+└── App.vue                       # 根元件（引入 Home 並提供全域樣式） -->
