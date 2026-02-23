@@ -28,24 +28,21 @@
   </div>
 </template>
 
-<script setup>
-import { computed } from 'vue';
-import ProjectCard from './ProjectCard.vue';
-import { projects } from '@/data/projects';
+<script setup lang="ts">
+import { computed } from 'vue'
+import ProjectCard from './ProjectCard.vue'
+import { projects } from '@/data/projects'
 
-const props = defineProps({
-  mode: {
-    type: String,
-    required: true,
-  },
-});
+const props = defineProps<{
+  mode: 'showcase' | 'professional'
+}>()
 
 const officialProjects = computed(() =>
   projects.filter(p => p.type === 'official')
-);
+)
 const practiceProjects = computed(() =>
   projects.filter(p => p.type === 'practice')
-);
+)
 </script>
 
 <style scoped>

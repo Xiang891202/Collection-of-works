@@ -2,32 +2,19 @@
   <header class="header" :class="{ 'professional': mode === 'professional' }">
     <div class="logo">YourLogo</div>
     <nav class="nav">
-      <a href="#projects" @click.prevent="scrollTo('projects')">專案作品</a>
-      <a href="#practice" @click.prevent="scrollTo('practice')">練習專案</a>
-      <a href="#about" @click.prevent="scrollTo('about')">關於我</a>
+      <router-link to="/#projects">專案作品</router-link>
+      <router-link to="/#practice">練習專案</router-link>
+      <router-link to="/about">關於我</router-link>
     </nav>
-    <ModeToggle :modelValue="mode" @update:modelValue="value => $emit('update:mode', value)" />
+    <ModeToggle :modelValue="mode" @update:modelValue="toggleMode" />
   </header>
 </template>
 
-<script setup>
-import ModeToggle from './ModeToggle.vue';
+<script setup lang="ts">
+import ModeToggle from './ModeToggle.vue'
+import { useMode } from '@/composables/useMode'
 
-defineProps({
-  mode: {
-    type: String,
-    required: true,
-  },
-});
-
-const emit = defineEmits(['update:mode']);
-
-const scrollTo = (sectionId) => {
-  const element = document.getElementById(sectionId);
-  if (element) {
-    element.scrollIntoView({ behavior: 'smooth' });
-  }
-};
+const { mode, toggleMode } = useMode()
 </script>
 
 <style scoped>

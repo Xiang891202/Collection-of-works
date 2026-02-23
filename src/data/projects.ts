@@ -1,5 +1,13 @@
-// 專案假資料，包含展示版與專業版兩種文字
-export const projects = [
+export interface Project {
+  id: number
+  title: string
+  images: string
+  showcaseText: string
+  professionalText: string
+  type: 'official' | 'practice'
+}
+
+export const projects: Project[] = [
   {
     id: 1,
     title: '電商網站設計',
@@ -24,5 +32,4 @@ export const projects = [
     professionalText: '基於 Markdown 的靜態生成，SEO 友善',
     type: 'official',
   },
-  // 可繼續增加更多假資料
-];
+]

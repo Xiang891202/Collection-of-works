@@ -74,16 +74,27 @@ npm run lint
 
 
 <!-- src/
-├── views/
-│   └── Home.vue                 # 首頁整合所有區塊
-├── components/
-│   ├── Header.vue                # 導覽列（含 Logo、導覽項目、ModeToggle）
-│   ├── ModeToggle.vue            # 模式切換按鈕（展示版 / 專業版）
-│   ├── HeroSection.vue           # 首屏大標題區
-│   ├── ProjectCard.vue           # 單一專案卡片（支援模式切換文字）
-│   ├── ProjectList.vue           # 專案列表（v-for 渲染 ProjectCard）
-│   ├── AboutSection.vue          # 個人資訊區（技能、證照、經歷、聯絡方式）
-│   └── Footer.vue                # 頁尾（版權、簡短聯絡、社群連結）
+├── views/                     # 頁面級元件（每個代表一個完整頁面）
+│   ├── Home.vue                # 首頁（含 Hero、ProjectList、Footer）
+│   └── AboutView.vue           # 關於我頁面（使用 AboutSection + Footer）
+│
+├── components/                 # 可複用的 UI 元件
+│   ├── Header.vue               # 導覽列（含 Logo、導覽項目、ModeToggle）
+│   ├── ModeToggle.vue           # 模式切換按鈕
+│   ├── HeroSection.vue          # 首屏大標題區（僅用於首頁）
+│   ├── ProjectCard.vue          # 單一專案卡片
+│   ├── ProjectList.vue          # 專案列表（內含 projects / practice 兩區）
+│   ├── AboutSection.vue         # 個人資訊區塊（技能、證照、經歷、聯絡方式）
+│   └── Footer.vue               # 頁尾
+│
+├── router/                     # 路由設定
+│   └── index.ts                 # 定義路徑與頁面的對應關係                
+│
+├── composables/                 # 組合式函式（共享邏輯與狀態）
+│   └── useMode.js               # 管理全域模式狀態（展示版/專業版）
+│
 ├── data/
-│   └── projects.js               # 前端假資料（專案列表）
-└── App.vue                       # 根元件（引入 Home 並提供全域樣式） -->
+│   └── projects.js              # 專案假資料
+│
+└── App.vue                      # 根元件（僅包含 <router-view> 及基礎樣式） 
+└── main.ts                      -->

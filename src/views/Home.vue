@@ -1,60 +1,37 @@
 <template>
   <div class="home" :class="mode">
-    <Header v-model:mode="mode" />
-    <HeroSection
-      :mode="mode"
-      @update:mode="mode = $event"
-      @view-projects="scrollToProjects"
-    />
+    <HeroSection :mode="mode" @update:mode="toggleMode" @view-projects="scrollToProjects" />
     <ProjectList :mode="mode" />
-    <AboutSection :mode="mode" />
     <Footer />
   </div>
 </template>
 
-<script setup>
-import { ref } from 'vue';
-import Header from '@/components/Header.vue';
-import HeroSection from '@/components/HeroSection.vue';
-import ProjectList from '@/components/ProjectList.vue';
-import AboutSection from '@/components/AboutSection.vue';
-import Footer from '@/components/Footer.vue';
+<script setup lang="ts">
+import { useMode } from '@/composables/useMode'
+import HeroSection from '@/components/HeroSection.vue'
+import ProjectList from '@/components/ProjectList.vue'
+import Footer from '@/components/Footer.vue'
 
-// 模式狀態：'showcase' 或 'professional'
-const mode = ref('showcase');
+const { mode, toggleMode } = useMode()
 
-// 平滑滾動至專案列表區（可由 Hero CTA 觸發）
+// 從 Hero CTA 滾動到專案列表
 const scrollToProjects = () => {
-  const projectsSection = document.getElementById('projects');
+  const projectsSection = document.getElementById('projects')
   if (projectsSection) {
-    projectsSection.scrollIntoView({ behavior: 'smooth' });
+    projectsSection.scrollIntoView({ behavior: 'smooth' })
   }
-};
+}
 </script>
 
-<style>
-/* 全域樣式與模式背景色 */
+<style scoped>
 .home {
   min-height: 100vh;
   transition: background-color 0.3s;
 }
 .home.showcase {
-  background-color: #ebf8ff; /* 展示版淡藍色背景 */
+  background-color: #ebf8ff;
 }
 .home.professional {
-  background-color: #feebc8; /* 專業版淡橘色背景 */
-}
-
-/* 基本重設 */
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
-
-body {
-  font-family: 'Inter', sans-serif;
-  color: #1a202c;
-  line-height: 1.6;
+  background-color: #feebc8;
 }
 </style>
