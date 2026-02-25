@@ -9,18 +9,21 @@
   </section>
 </template>
 
-<script setup>
-defineProps({
-  mode: {
-    type: String,
-    required: true,
-  },
-});
-const emit = defineEmits(['update:mode', 'view-projects']);
+<script setup lang="ts">
+// 將 defineProps 回傳值賦予變數 props，以便在 script 中存取
+const props = defineProps<{
+  mode: 'showcase' | 'professional'
+}>()
+
+const emit = defineEmits<{
+  (e: 'update:mode', value: 'showcase' | 'professional'): void
+  (e: 'view-projects'): void
+}>()
 
 const toggleMode = () => {
-  emit('update:mode', mode === 'showcase' ? 'professional' : 'showcase');
-};
+  // 使用 props.mode 來取得目前的 mode 值
+  emit('update:mode', props.mode === 'showcase' ? 'professional' : 'showcase')
+}
 </script>
 
 <style scoped>
@@ -33,10 +36,10 @@ const toggleMode = () => {
   text-align: center;
   padding: 2rem;
   transition: background-color 0.3s;
-  background-color: #ebf8ff; /* 展示版淡藍色 */
+  background-color: #ebf8ff;
 }
 .hero.professional {
-  background-color: #feebc8; /* 專業版淡橘色 */
+  background-color: #feebc8;
 }
 .title {
   font-size: 3rem;

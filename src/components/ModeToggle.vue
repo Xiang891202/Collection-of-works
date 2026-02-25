@@ -1,33 +1,21 @@
 <template>
   <button
     class="mode-toggle"
-    :class="{ 'professional': mode === 'professional' }"
-    @click="toggleMode"
+    :class="{ 'professional': modelValue === 'professional' }"
+    @click="$emit('update:modelValue', modelValue === 'showcase' ? 'professional' : 'showcase')"
   >
-    {{ mode === 'showcase' ? '展示版' : '專業版' }}
+    {{ modelValue === 'showcase' ? '展示版' : '專業版' }}
   </button>
 </template>
 
-<script setup>
-import { computed } from 'vue';
+<script setup lang="ts">
+defineProps<{
+  modelValue: 'showcase' | 'professional'
+}>()
 
-const props = defineProps({
-  modelValue: {
-    type: String,
-    default: 'showcase', // 'showcase' 或 'professional'
-  },
-});
-
-const emit = defineEmits(['update:modelValue']);
-
-const mode = computed({
-  get: () => props.modelValue,
-  set: (value) => emit('update:modelValue', value),
-});
-
-const toggleMode = () => {
-  mode.value = mode.value === 'showcase' ? 'professional' : 'showcase';
-};
+defineEmits<{
+  (e: 'update:modelValue', value: 'showcase' | 'professional'): void
+}>()
 </script>
 
 <style scoped>

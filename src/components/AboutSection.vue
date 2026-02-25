@@ -37,19 +37,16 @@
   </section>
 </template>
 
-<script setup>
-defineProps({
-  mode: {
-    type: String,
-    required: true,
-  },
-});
+<script setup lang="ts">
+defineProps<{
+  mode: 'showcase' | 'professional'
+}>()
 </script>
 
 <style scoped>
 .about {
   padding: 4rem 2rem;
-  background-color: #f7fafc; /* 中性底色，可隨模式微調 */
+  background-color: #f7fafc;
   transition: background-color 0.3s;
 }
 .about.professional {

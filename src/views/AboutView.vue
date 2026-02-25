@@ -1,6 +1,5 @@
 <template>
   <div class="about-view" :class="mode">
-    <!-- 可選的頁面專屬標題 -->
     <h1 class="page-title">關於我</h1>
     <AboutSection :mode="mode" />
     <Footer />
@@ -18,7 +17,7 @@ const { mode } = useMode()
 <style scoped>
 .about-view {
   min-height: 100vh;
-  padding-top: 80px; /* 避免 header 遮擋內容 */
+  padding-top: 80px;
   transition: background-color 0.3s;
 }
 .about-view.showcase {

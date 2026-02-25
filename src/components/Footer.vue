@@ -12,6 +12,10 @@
   </footer>
 </template>
 
+<script setup lang="ts">
+// 無 props，僅為型別統一
+</script>
+
 <style scoped>
 .footer {
   background-color: #2d3748;

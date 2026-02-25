@@ -12,17 +12,13 @@
   </div>
 </template>
 
-<script setup>
-defineProps({
-  project: {
-    type: Object,
-    required: true,
-  },
-  mode: {
-    type: String,
-    required: true,
-  },
-});
+<script setup lang="ts">
+import type { Project } from '@/data/projects'
+
+defineProps<{
+  project: Project
+  mode: 'showcase' | 'professional'
+}>()
 </script>
 
 <style scoped>

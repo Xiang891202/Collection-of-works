@@ -14,7 +14,6 @@ import Footer from '@/components/Footer.vue'
 
 const { mode, toggleMode } = useMode()
 
-// 從 Hero CTA 滾動到專案列表
 const scrollToProjects = () => {
   const projectsSection = document.getElementById('projects')
   if (projectsSection) {

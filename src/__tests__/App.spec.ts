@@ -1,11 +1,11 @@
 import { describe, it, expect } from 'vitest'
-
 import { mount } from '@vue/test-utils'
 import App from '../App.vue'
+import Header from '../components/Header.vue'
 
 describe('App', () => {
-  it('mounts renders properly', () => {
+  it('renders Header component', () => {
     const wrapper = mount(App)
-    expect(wrapper.text()).toContain('You did it!')
+    expect(wrapper.findComponent(Header).exists()).toBe(true)
   })
 })
