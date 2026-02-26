@@ -77,13 +77,14 @@ npm run lint
 ├── views/                     # 頁面級元件（每個代表一個完整頁面）
 │   ├── Home.vue                # 首頁（含 Hero、ProjectList、Footer）
 │   └── AboutView.vue           # 關於我頁面（使用 AboutSection + Footer）
+│   └── PracticeView.vue        # 關於練習專案頁面 
 │
 ├── components/                 # 可複用的 UI 元件
 │   ├── Header.vue               # 導覽列（含 Logo、導覽項目、ModeToggle）
 │   ├── ModeToggle.vue           # 模式切換按鈕
 │   ├── HeroSection.vue          # 首屏大標題區（僅用於首頁）
 │   ├── ProjectCard.vue          # 單一專案卡片
-│   ├── ProjectList.vue          # 專案列表（內含 projects / practice 兩區）
+│   ├── ProjectList.vue          # 專案列表（內含 projects ）
 │   ├── AboutSection.vue         # 個人資訊區塊（技能、證照、經歷、聯絡方式）
 │   └── Footer.vue               # 頁尾
 │

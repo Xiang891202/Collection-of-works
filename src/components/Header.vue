@@ -3,7 +3,7 @@
     <div class="logo">YourLogo</div>
     <nav class="nav">
       <router-link to="/#projects">專案作品</router-link>
-      <router-link to="/#practice">練習專案</router-link>
+      <router-link to="/practice">練習專案</router-link>
       <router-link to="/about">關於我</router-link>
     </nav>
     <ModeToggle :modelValue="mode" @update:modelValue="toggleMode" />

@@ -14,7 +14,7 @@
     </section>
 
     <!-- 練習專案區 (practice) -->
-    <section id="practice" class="project-section">
+    <!-- <section id="practice" class="project-section">
       <h2 class="section-title">練習專案</h2>
       <div class="card-grid">
         <ProjectCard
@@ -24,7 +24,7 @@
           :mode="mode"
         />
       </div>
-    </section>
+    </section> -->
   </div>
 </template>
 
