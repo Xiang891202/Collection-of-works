@@ -1,5 +1,5 @@
 <template>
-  <header class="header" :class="{ 'professional': mode === 'professional' }">
+  <header class="header" >
     <div class="logo">YourLogo</div>
     <nav class="nav">
       <router-link to="/#projects">專案作品</router-link>
@@ -33,9 +33,7 @@ const { mode, toggleMode } = useMode()
   z-index: 1000;
   transition: background-color 0.3s;
 }
-.header.professional {
-  background-color: rgba(254, 235, 200, 0.9);
-}
+
 .logo {
   font-size: 1.5rem;
   font-weight: bold;
