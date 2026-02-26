@@ -87,6 +87,7 @@ npm run lint
 │   ├── ProjectList.vue          # 專案列表（內含 projects ）
 │   ├── AboutSection.vue         # 個人資訊區塊（技能、證照、經歷、聯絡方式）
 │   └── Footer.vue               # 頁尾
+│   └── Practice.vue             # 練習專案
 │
 ├── router/                     # 路由設定
 │   └── index.ts                 # 定義路徑與頁面的對應關係                

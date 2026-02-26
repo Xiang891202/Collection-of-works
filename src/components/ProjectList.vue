@@ -40,9 +40,9 @@ const props = defineProps<{
 const officialProjects = computed(() =>
   projects.filter(p => p.type === 'official')
 )
-const practiceProjects = computed(() =>
-  projects.filter(p => p.type === 'practice')
-)
+// const practiceProjects = computed(() =>
+//   projects.filter(p => p.type === 'practice')
+// )
 </script>
 
 <style scoped>
