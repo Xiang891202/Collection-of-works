@@ -5,6 +5,7 @@
         <router-link to="/" class="logo">Collection of Works</router-link>
         <router-link to="/projects">專案列表</router-link>
         <router-link to="/about">關於我</router-link>
+        <!-- <router-link to="/admin/login">後台</router-link> -->
       </div>
       <button @click="toggleMode" class="mode-btn">
         {{ currentMode === 'showcase' ? '📋 展示版' : '⚙️ 專業版' }}

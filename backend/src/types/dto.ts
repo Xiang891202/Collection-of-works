@@ -16,7 +16,7 @@ export interface ShowcaseDTO {
   impact: string;
   extendedApplications: string[];
   images: string[];
-   demoUrl: string | DemoUrl | null;
+  demoUrl: { label: string; url: string }[] | null;
 }
 
 // =========================
@@ -161,4 +161,43 @@ export interface ApiResponse<T> {
     timestamp: string;
   };
   error?: string;
+}
+
+// =========================
+// 認證 DTO
+// =========================
+export interface AuthDTO {
+  token: string;
+  user: { id: string; email: string; role: string };
+}
+
+// =========================
+// 管理員列表 DTO
+// =========================
+export interface AdminProjectListItemDTO {
+  id: string;
+  slug: string;
+  title: string;
+  tag: string;
+  status: string;
+  thumbnail_url: string | null;
+  one_liner: string;
+  updated_at: string;
+}
+
+// =========================
+// 管理員詳細 DTO
+// =========================
+export interface AdminProjectDetailDTO {
+  id: string;
+  slug: string;
+  title: string;
+  tag: string;
+  thumbnail_url: string | null;
+  one_liner: string;
+  status: string;
+  showcase: ShowcaseDTO | null;
+  professional: ProfessionalDTO | null;
+  caseStudy: CaseStudyDTO | null;
+  published_at: string | null;
 }

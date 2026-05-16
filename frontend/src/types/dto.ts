@@ -10,7 +10,7 @@ export interface ShowcaseDTO {
   impact: string;
   extendedApplications: string[];
   images: string[];
-  demoUrl: string | DemoUrl | null;
+  demoUrl: { label: string; url: string }[] | null;
 }
 
 export interface ProfessionalSummaryDTO {
@@ -32,6 +32,7 @@ export interface ProfessionalDTO {
   impactAnalysis: { scalability: string; maintainability: string; reliability: string; consistency: string; performance: string };
   futureEvolution: { level: string; plan: string }[];
   interviewQuestions: string[];
+  images: string[];   // 確保有這行
   githubUrl: string | null;
 }
 
@@ -52,7 +53,7 @@ export interface CaseStudyDTO {
   productionThinking: { scenario: string; strategy: string }[];
   futureEvolution: { scale: string; approach: string }[];
   interviewQuestions: string[];
-  diagrams: { type: string; url: string }[];
+  diagrams: { label: string; url: string }[];   // 修改這裡
 }
 
 export interface ProjectCardDTO {
@@ -72,4 +73,36 @@ export interface ApiResponse<T> {
   data: T | null;
   meta: { slug?: string; version: string; timestamp: string };
   error?: string;
+}
+
+// 加入這些型別（放在 ShowcaseDTO 等之後）
+
+export interface AdminProjectListItemDTO {
+  id: string;
+  slug: string;
+  title: string;
+  tag: string;
+  status: string;
+  thumbnail_url: string | null;
+  one_liner: string;
+  updated_at: string;
+}
+
+export interface AdminProjectDetailDTO {
+  id: string;
+  slug: string;
+  title: string;
+  tag: string;
+  thumbnail_url: string | null;
+  one_liner: string;
+  status: string;
+  published_at?: string | null;   // 新增，選填以相容舊資料
+  showcase: ShowcaseDTO | null;
+  professional: ProfessionalDTO | null;
+  caseStudy: CaseStudyDTO | null;
+}
+
+export interface AuthDTO {
+  token: string;
+  user: { id: string; email: string; role: string };
 }

@@ -129,13 +129,6 @@ export function uploadImage(projectId: string, file: File) {
   });
 }
 
-// 刪除圖片（需搭配後端 DELETE /admin/media/:projectId?url=...）
-export function deleteImage(projectId: string, imageUrl: string) {
-  return api.delete(`/admin/media/${projectId}`, {
-    params: { url: imageUrl },
-  });
-}
-
 export function publishProject(id: string, data: { status: string; published_at: string | null }) {
   return api.patch(`/admin/projects/${id}/publish`, data);
 }

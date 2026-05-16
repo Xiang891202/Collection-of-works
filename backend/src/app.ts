@@ -5,6 +5,12 @@ import { supabaseAdmin } from './config/supabase';
 import projectRoutes from './api/v1/projects';
 import { errorHandler } from './middleware/errorHandler';
 
+
+import adminAuthRoutes from './api/v1/admin/auth';
+import adminProjectRoutes from './api/v1/admin/projects';
+import adminMediaRoutes from './api/v1/admin/media';
+
+
 const app = express();
 
 app.use(cors());
@@ -13,7 +19,7 @@ app.use(express.json());
 // CDN 快取標頭
 app.use('/api', (req, res, next) => {
   res.set({
-    'Cache-Control': `public, max-age=${config.cache.maxAge}, stale-while-revalidate=${config.cache.staleWhileRevalidate}`,
+    'Cache-Control': `public, max-age=60, stale-while-revalidate=86400`,
     'X-API-Version': config.appVersion,
   });
   next();
@@ -50,6 +56,11 @@ app.get('/api/health', async (req, res) => {
 
 // 訪客 API
 app.use('/api/v1/projects', projectRoutes);
+
+// 管理員 API
+app.use('/api/v1/admin', adminAuthRoutes);
+app.use('/api/v1/admin/projects', adminProjectRoutes);
+app.use('/api/v1/admin/media', adminMediaRoutes);
 
 // 全域錯誤處理
 app.use(errorHandler);

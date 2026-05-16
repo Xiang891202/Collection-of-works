@@ -53,4 +53,26 @@ export class ContentRepository {
         return null;
     }
   }
+
+  // Upsert 方法
+  async upsertShowcase(projectId: string, data: any) {
+    const { error } = await supabaseAdmin
+      .from('showcase_content')
+      .upsert({ project_id: projectId, data }, { onConflict: 'project_id' });
+    if (error) throw error;
+  }
+
+  async upsertProfessional(projectId: string, data: any) {
+    const { error } = await supabaseAdmin
+      .from('professional_content')
+      .upsert({ project_id: projectId, data }, { onConflict: 'project_id' });
+    if (error) throw error;
+  }
+
+  async upsertCaseStudy(projectId: string, data: any, version = 1) {
+    const { error } = await supabaseAdmin
+      .from('case_study_content')
+      .upsert({ project_id: projectId, version, data }, { onConflict: 'project_id,version' });
+    if (error) throw error;
+  }
 }

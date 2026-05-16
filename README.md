@@ -1,13 +1,37 @@
 # Collection of Works
 
-雙切作品集系統 — 同一份專案，透過不同認知層級（展示版 / 專業版 / 工程紀錄）進行資訊重構。
+雙切作品集系統 — 同一份專案，透過不同認知層級（展示版 / 專業版 / 工程紀錄）進行資訊重構。  
+支援管理後台、草稿與預約發布、圖片上傳與自動清理、訪客端快取與冷啟動預防。
 
 ## 技術棧
 
 - **前端**：Vue 3 + Vite + Vue Router + Axios
 - **後端**：Node.js + Express + TypeScript
 - **資料庫**：Supabase (PostgreSQL)
+- **儲存**：Supabase Storage (圖片)
 - **部署**：Vercel (前端) / Render (後端)
+
+## 系統特色
+
+### 訪客端
+- **展示版**：問題 → 解法 → 影響，適合非技術決策者
+- **專業版**：系統架構、設計決策、Trade-off、影響分析，適合工程師與面試官
+- **工程紀錄**：迭代過程、核心問題、技術決策、未來演進
+- **模式切換**：前端 localStorage 快取 + 背景更新，接近瞬時切換
+- **圖片輪播**：展示版與專業版支援圖片輪播
+- **冷啟動預防**：GitHub Actions 每 10 分鐘 ping 後端健康檢查，搭配 UptimeRobot 備援
+
+### 管理後台
+- **專案管理**：新增、編輯、軟刪除、復原
+- **草稿／發布／預約發布**：可將專案設為草稿，或設定未來自動發布時間
+- **狀態篩選**：Active / Draft / Deleted / All
+- **內容編輯**：
+  - 基本資料（標題、Slug、縮圖上傳）
+  - 展示版（系統定義、問題、解法、影響、延伸應用、圖片管理、體驗連結）
+  - 專業版（系統定位、架構全景圖、資料流、邊界、架構挑戰、設計決策、演進方向配圖、引導至工程紀錄、GitHub 連結）
+  - 工程紀錄（初始假設、迭代目標、核心問題、限制條件、工程決策、技術影響、Production 思維、未來演進、面試問題、架構圖輪播）
+- **圖片管理**：上傳多圖／單圖，刪除時同步清除 Supabase Storage 檔案，避免遺留孤兒檔案
+- **發布設定**：一鍵切換草稿／發布，設定預約發布時間
 
 ## 啟動本機開發
 
@@ -16,24 +40,32 @@
 ```bash
 cd backend
 npm install
+cp .env.example .env   # 填入 Supabase URL / Service Role Key / JWT Secret
 npm run dev
 前端
 bash
 cd frontend
 npm install
+cp .env.example .env   # 可選：VITE_API_BASE_URL
 npm run dev
-設定 .env 變數參考 backend/.env.example。
 
-系統特色
-同一專案可切換「展示版」(problem→solution→impact) 與「專業版」(architecture→trade-off→scalability)
 
-專業版可進一步查看「工程紀錄」(case study)
+環境變數範例
+後端 .env
+env
+PORT=3000
+SUPABASE_URL=your_supabase_url
+SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
+JWT_SECRET=your_jwt_secret
+前端 .env
+env
+VITE_API_BASE_URL=http://localhost:3000/api/v1
+部署注意事項
+後端：Render 免費方案會休眠，已配置 GitHub Actions 每 10 分鐘 ping /api/health 喚醒
 
-模式由 URL 決定，後端依 mode 回傳不同 DTO
+前端：Vercel 自動部署，需設定環境變數 VITE_API_BASE_URL 指向後端實際網址
 
-前端預載與快取策略，模式切換接近瞬時
-
-管理員後台（規劃中）
+Storage：確保 Supabase Bucket project-images 的 RLS 原則允許管理員上傳／刪除，訪客僅能讀取
 
 作者
 Xiang
