@@ -40,32 +40,14 @@
 ```bash
 cd backend
 npm install
-cp .env.example .env   # 填入 Supabase URL / Service Role Key / JWT Secret
 npm run dev
 前端
 bash
 cd frontend
 npm install
-cp .env.example .env   # 可選：VITE_API_BASE_URL
 npm run dev
 
 
-環境變數範例
-後端 .env
-env
-PORT=3000
-SUPABASE_URL=your_supabase_url
-SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
-JWT_SECRET=your_jwt_secret
-前端 .env
-env
-VITE_API_BASE_URL=http://localhost:3000/api/v1
-部署注意事項
-後端：Render 免費方案會休眠，已配置 GitHub Actions 每 10 分鐘 ping /api/health 喚醒
-
-前端：Vercel 自動部署，需設定環境變數 VITE_API_BASE_URL 指向後端實際網址
-
-Storage：確保 Supabase Bucket project-images 的 RLS 原則允許管理員上傳／刪除，訪客僅能讀取
 
 作者
 Xiang
