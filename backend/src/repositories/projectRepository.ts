@@ -107,6 +107,8 @@ export class ProjectRepository {
     if (input.one_liner !== undefined) updates.one_liner = input.one_liner;
     if (input.demo_url !== undefined) updates.demo_url = input.demo_url;
     if (input.github_url !== undefined) updates.github_url = input.github_url;
+    // 只要有更新，就刷新 updated_at
+    updates.updated_at = new Date().toISOString();
     const { error } = await supabaseAdmin
       .from('projects')
       .update(updates)
@@ -118,7 +120,10 @@ export class ProjectRepository {
   async softDelete(id: string): Promise<void> {
     const { error } = await supabaseAdmin
       .from('projects')
-      .update({ status: 'deleted' })
+      .update({ 
+        status: 'deleted',
+        updated_at: new Date().toISOString()
+      })
       .eq('id', id);
     if (error) throw error;
   }
@@ -127,7 +132,11 @@ export class ProjectRepository {
   async updateStatusAndPublishedAt(id: string, status: string, publishedAt: string | null): Promise<void> {
     const { error } = await supabaseAdmin
       .from('projects')
-      .update({ status, published_at: publishedAt })
+      .update({ 
+        status, 
+        published_at: publishedAt,
+        updated_at: new Date().toISOString()   // ✅ 關鍵修改
+      })
       .eq('id', id);
     if (error) throw error;
   }

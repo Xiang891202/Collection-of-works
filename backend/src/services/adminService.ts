@@ -62,11 +62,33 @@ export class AdminService {
   }
 
   async updateShowcase(id: string, data: any): Promise<ShowcaseDTO> {
+    // 1. 更新展示版的內容（基本文案、延伸應用、圖片等）
     await this.contentRepo.upsertShowcase(id, data);
+
+    // 2. ✨【核心修正】將 demoUrl 同步寫入專案主表（projectRepo）
+    // 判斷 data 裡面是否存在 demoUrl（無論是 undefined、null 或有值都要處理防禦）
+    if ('demoUrl' in data) {
+      let dbDemoUrl = data.demoUrl;
+      
+      // 如果前端傳過來的是物件陣列，根據你 ShowcaseMapper.toDTO 的 JSON.parse 邏輯，
+      // 在存入資料庫（Text 欄位）前，必須先使用 JSON.stringify 轉成 JSON 字串！
+      if (dbDemoUrl && typeof dbDemoUrl === 'object') {
+        dbDemoUrl = JSON.stringify(dbDemoUrl);
+      }
+
+      // 呼叫你 projectRepo 的更新方法（名稱可對照你的 updateMeta 或基礎的 update 方法）
+      // 這裡使用 updateMeta 作為範例，或是如果你 Repo 有更基礎的單純更新方法也可以替換
+      await this.projectRepo.updateMeta(id, {
+        demo_url: dbDemoUrl
+      });
+    }
+
+    // 3. 重新撈取最新資料並回傳給前端
     const raw = await this.contentRepo.getShowcaseContent(id);
     const project = await this.projectRepo.findById(id);
     return ShowcaseMapper.toDTO(raw, project);
   }
+
 
   async updateProfessional(id: string, data: any): Promise<ProfessionalDTO> {
     await this.contentRepo.upsertProfessional(id, data);

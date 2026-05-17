@@ -139,27 +139,34 @@ function goToCaseStudy() {
 }
 
 async function save() {
-  // 構建符合後端 ProfessionalDTO 的 payload
   const payload: any = {
+    // 既有欄位
     systemGoal: form.value.systemGoal,
     architectureDiagram: form.value.architectureDiagram,
     dataFlow: form.value.dataFlow,
     githubUrl: form.value.githubUrl,
     coreProblems: form.value.coreProblems,
     designDecisions: form.value.designDecisions,
-    // 以下字段保留默認值（避免後端報錯）
+    // ✅ 補上遺漏的三個欄位
+    boundary: form.value.boundary,
+    evolutionDirection: form.value.evolutionDirection,
+    caseStudyGuide: form.value.caseStudyGuide,
+    // 演進方向配圖（已使用 images 欄位）
+    images: form.value.evolutionImages,
+    // 以下為後端必填但可不填的欄位，給予預設空值
     techStack: { frontend: [], backend: [], storage: [] },
     keyProcesses: [],
     tradeOffs: [],
-    impactAnalysis: { scalability: '', maintainability: '', reliability: '', consistency: '', performance: '' },
+    impactAnalysis: {
+      scalability: '',
+      maintainability: '',
+      reliability: '',
+      consistency: '',
+      performance: ''
+    },
     futureEvolution: [],
     interviewQuestions: [],
-    images: form.value.evolutionImages, // 使用 evolutionImages 作為 images
   };
-
-  // 將 boundary, evolutionDirection, caseStudyGuide 暫時存入一個備註字段（如 impactAnalysis.scalability 等，但不可取）
-  // 這裡選擇不儲存這三個字段，僅供前端編輯，刷新後會丟失。若要持久化，需修改後端並增加字段。
-  // 您可以選擇將它們拼接後存入一個文本字段，或忽略。
 
   await updateProfessionalContent(props.projectId, payload);
   alert('專業版已儲存');

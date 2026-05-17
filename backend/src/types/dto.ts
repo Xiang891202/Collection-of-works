@@ -73,6 +73,9 @@ export interface ProfessionalDTO {
     level: string;
     plan: string;
   }[];
+  boundary?: string;
+  evolutionDirection?: string;
+  caseStudyGuide?: string;
   interviewQuestions: string[];
   githubUrl: string | null;
 }

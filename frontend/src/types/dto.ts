@@ -1,8 +1,14 @@
+// =========================
+// 線上體驗 DEMO DTO
+// =========================
 export interface DemoUrl {
   user?: string;
   admin?: string;
 }
 
+// =========================
+// 展示版 DTO（Showcase）
+// =========================
 export interface ShowcaseDTO {
   systemDefinition: string;
   problem: string;
@@ -13,29 +19,70 @@ export interface ShowcaseDTO {
   demoUrl: { label: string; url: string }[] | null;
 }
 
+// =========================
+// 專業版摘要 DTO（預載用）
+// =========================
 export interface ProfessionalSummaryDTO {
   systemGoal: string;
-  techStack: { frontend: string[]; backend: string[]; storage: string[] };
+  techStack: {
+    frontend: string[];
+    backend: string[];
+    storage: string[];
+  };
   architectureOverview: string;
   coreProblemTitles: string[];
 }
 
+// =========================
+// 專業版完整 DTO
+// =========================
 export interface ProfessionalDTO {
   systemGoal: string;
-  techStack: { frontend: string[]; backend: string[]; storage: string[] };
+  techStack: {
+    frontend: string[];
+    backend: string[];
+    storage: string[];
+  };
   architectureDiagram: string | null;
   dataFlow: string;
   keyProcesses: string[];
-  coreProblems: { title: string; description: string }[];
-  designDecisions: { problem: string; rootCause: string; solution: string; alternative: string }[];
-  tradeOffs: { decision: string; chosen: string; sacrificed: string; reason: string }[];
-  impactAnalysis: { scalability: string; maintainability: string; reliability: string; consistency: string; performance: string };
-  futureEvolution: { level: string; plan: string }[];
+  coreProblems: {
+    title: string;
+    description: string;
+  }[];
+  designDecisions: {
+    problem: string;
+    rootCause: string;
+    solution: string;
+    alternative: string;
+  }[];
+  tradeOffs: {
+    decision: string;
+    chosen: string;
+    sacrificed: string;
+    reason: string;
+  }[];
+  impactAnalysis: {
+    scalability: string;
+    maintainability: string;
+    reliability: string;
+    consistency: string;
+    performance: string;
+  };
+  futureEvolution: {
+    level: string;
+    plan: string;
+  }[];
+  boundary?: string;
+  evolutionDirection?: string;
+  caseStudyGuide?: string;
   interviewQuestions: string[];
-  images: string[];   // 確保有這行
   githubUrl: string | null;
 }
 
+// =========================
+// 工程紀錄預覽 DTO（預載用）
+// =========================
 export interface CaseStudyPreviewDTO {
   iterationGoal: string;
   coreProblemCount: number;
@@ -43,19 +90,56 @@ export interface CaseStudyPreviewDTO {
   thumbnailDiagram: string | null;
 }
 
+// =========================
+// 工程紀錄完整 DTO
+// =========================
 export interface CaseStudyDTO {
-  initialAssumption: { architecture: string; dataFlow: string; limitations: string };
+  initialAssumption: {
+    architecture: string;
+    dataFlow: string;
+    limitations: string;
+  };
   iterationGoal: string;
-  coreProblems: { title: string; rootCause: string; solution: string; alternative: string }[];
-  constraints: { constraint: string; reason: string }[];
-  engineeringDecisions: { problem: string; decision: string; why: string }[];
-  technicalImpact: { maintainability: string; scalability: string; reliability: string; performance: string; security: string };
-  productionThinking: { scenario: string; strategy: string }[];
-  futureEvolution: { scale: string; approach: string }[];
+  coreProblems: {
+    title: string;
+    rootCause: string;
+    solution: string;
+    alternative: string;
+  }[];
+  constraints: {
+    constraint: string;
+    reason: string;
+  }[];
+  engineeringDecisions: {
+    problem: string;
+    decision: string;
+    why: string;
+  }[];
+  technicalImpact: {
+    maintainability: string;
+    scalability: string;
+    reliability: string;
+    performance: string;
+    security: string;
+  };
+  productionThinking: {
+    scenario: string;
+    strategy: string;
+  }[];
+  futureEvolution: {
+    scale: string;
+    approach: string;
+  }[];
   interviewQuestions: string[];
-  diagrams: { label: string; url: string }[];   // 修改這裡
+  diagrams: {
+    type: string;
+    url: string;
+  }[];
 }
 
+// =========================
+// 專案列表卡片 DTO
+// =========================
 export interface ProjectCardDTO {
   id: string;
   slug: string;
@@ -67,16 +151,32 @@ export interface ProjectCardDTO {
   githubUrl: string | null;
 }
 
+// =========================
+// 統一 API 回應
+// =========================
 export interface ApiResponse<T> {
   success: boolean;
-  mode: string;
+  mode: 'showcase' | 'professional-summary' | 'professional' | 'case-study-preview' | 'case-study';
   data: T | null;
-  meta: { slug?: string; version: string; timestamp: string };
+  meta: {
+    slug?: string;
+    version: string;
+    timestamp: string;
+  };
   error?: string;
 }
 
-// 加入這些型別（放在 ShowcaseDTO 等之後）
+// =========================
+// 認證 DTO
+// =========================
+export interface AuthDTO {
+  token: string;
+  user: { id: string; email: string; role: string };
+}
 
+// =========================
+// 管理員列表 DTO
+// =========================
 export interface AdminProjectListItemDTO {
   id: string;
   slug: string;
@@ -88,6 +188,9 @@ export interface AdminProjectListItemDTO {
   updated_at: string;
 }
 
+// =========================
+// 管理員詳細 DTO
+// =========================
 export interface AdminProjectDetailDTO {
   id: string;
   slug: string;
@@ -96,13 +199,8 @@ export interface AdminProjectDetailDTO {
   thumbnail_url: string | null;
   one_liner: string;
   status: string;
-  published_at?: string | null;   // 新增，選填以相容舊資料
   showcase: ShowcaseDTO | null;
   professional: ProfessionalDTO | null;
   caseStudy: CaseStudyDTO | null;
-}
-
-export interface AuthDTO {
-  token: string;
-  user: { id: string; email: string; role: string };
+  published_at: string | null;
 }
