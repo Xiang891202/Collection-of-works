@@ -29,6 +29,7 @@
       <div class="form-group">
         <label>⚠️ 核心問題</label>
         <ObjectListInput
+          :key="`coreProblems_${componentKey}`"
           v-model="form.coreProblems"
           :fields="coreProblemFields"
         />
@@ -38,6 +39,7 @@
       <div class="form-group">
         <label>🔒 限制條件</label>
         <ObjectListInput
+          :key="`constraints_${componentKey}`"
           v-model="form.constraints"
           :fields="constraintFields"
         />
@@ -47,6 +49,7 @@
       <div class="form-group">
         <label>🔧 工程決策</label>
         <ObjectListInput
+          :key="`engineeringDecisions_${componentKey}`"
           v-model="form.engineeringDecisions"
           :fields="engineeringDecisionFields"
         />
@@ -81,6 +84,7 @@
       <div class="form-group">
         <label>🏭 Production 思維</label>
         <ObjectListInput
+          :key="`productionThinking_${componentKey}`"
           v-model="form.productionThinking"
           :fields="productionThinkingFields"
         />
@@ -90,6 +94,7 @@
       <div class="form-group">
         <label>🔭 未來演進</label>
         <ObjectListInput
+          :key="`futureEvolution_${componentKey}`" 
           v-model="form.futureEvolution"
           :fields="futureEvolutionFields"
         />
@@ -98,13 +103,17 @@
       <!-- 面試問題 -->
       <div class="form-group">
         <label>📌 面試問題</label>
-        <DynamicListInput v-model="form.interviewQuestions" />
+        <DynamicListInput 
+        :key="`interviewQuestions_${componentKey}`"
+        v-model="form.interviewQuestions" />
       </div>
 
       <!-- 架構圖（輪播多圖） -->
       <div class="form-group">
         <label>🖼 架構圖（輪播）</label>
-        <ImageManager v-model="diagramImages" :projectId="projectId" />
+        <ImageManager 
+        :key="`diagramImages_${componentKey}`"
+        v-model="diagramImages" :projectId="projectId" />
       </div>
 
       <div class="form-actions">
@@ -123,6 +132,7 @@ import ImageManager from '../../../components/admin/ImageManager.vue';
 import type { CaseStudyDTO } from '../../../types/dto';
 
 const props = defineProps<{ projectId: string }>();
+const componentKey = ref(0);
 
 // 專門存放架構圖片的 URL 陣列
 const diagramImages = ref<string[]>([]);
@@ -138,6 +148,7 @@ const form = ref<Omit<CaseStudyDTO, 'diagrams'>>({
   productionThinking: [],
   futureEvolution: [],
   interviewQuestions: [],
+  images: [],
 });
 
 // ObjectListInput 欄位定義
@@ -184,14 +195,15 @@ onMounted(async () => {
       productionThinking: cs.productionThinking || [],
       futureEvolution: cs.futureEvolution || [],
       interviewQuestions: cs.interviewQuestions || [],
+      images: cs.images || [],
     };
   }
+  componentKey.value++; // 讓 DynamicListInput 重新渲染以顯示新資料
 });
 
 async function save() {
-  // 將 diagramImages 轉為 diagrams 需要的格式（label 自動編號）
   const diagramsPayload = diagramImages.value.map((url, idx) => ({
-    label: `架構圖 ${idx + 1}`,
+    type: `架構圖 ${idx + 1}`,
     url,
   }));
 

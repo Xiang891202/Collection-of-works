@@ -77,6 +77,7 @@ export interface ProfessionalDTO {
   evolutionDirection?: string;
   caseStudyGuide?: string;
   interviewQuestions: string[];
+  images: string[];   // 新增
   githubUrl: string | null;
 }
 
@@ -135,6 +136,7 @@ export interface CaseStudyDTO {
     type: string;
     url: string;
   }[];
+  images: string[];
 }
 
 // =========================

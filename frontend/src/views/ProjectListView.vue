@@ -10,7 +10,10 @@
         :to="`/projects/${p.slug}`"
         class="card"
       >
-        <div class="card-thumb">{{ p.thumbnailUrl ? '🖼' : '📁' }}</div>
+        <div class="card-thumb">
+          <img v-if="p.thumbnailUrl" :src="p.thumbnailUrl" alt="縮圖" />
+          <span v-else>📁</span>
+        </div>
         <span class="tag">{{ p.tag }}</span>
         <h3>{{ p.title }}</h3>
         <p>{{ p.oneLiner }}</p>
@@ -40,14 +43,28 @@ onMounted(() => load());
   padding: 20px;
   transition: border-color 0.2s;
 }
-.card:hover { border-color: var(--accent); }
+.card:hover {
+  border-color: var(--accent);
+}
 .card-thumb {
-  font-size: 48px;
-  text-align: center;
-  padding: 20px;
+  width: 100%;
+  height: 160px;
   background: var(--bg);
   border-radius: var(--radius);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
   margin-bottom: 12px;
+}
+.card-thumb img {
+  width: 100%;
+  height: 160px;
+  object-fit: cover;
+  border-radius: var(--radius);
+}
+.card-thumb span {
+  font-size: 48px;
 }
 .tag {
   display: inline-block;
@@ -57,7 +74,16 @@ onMounted(() => load());
   font-size: 12px;
   color: var(--text-muted);
 }
-h3 { color: var(--text); margin: 8px 0 6px; }
-p { font-size: 13px; margin: 0; }
-.loading { text-align: center; padding: 60px; }
+h3 {
+  color: var(--text);
+  margin: 8px 0 6px;
+}
+p {
+  font-size: 13px;
+  margin: 0;
+}
+.loading {
+  text-align: center;
+  padding: 60px;
+}
 </style>

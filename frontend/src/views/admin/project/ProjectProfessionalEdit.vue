@@ -30,6 +30,7 @@
       <div class="form-group">
         <label>⚠️ 最關鍵的架構挑戰</label>
         <ObjectListInput
+          :key="`coreProblems_${componentKey}`"
           v-model="form.coreProblems"
           :fields="challengeFields"
         />
@@ -39,6 +40,7 @@
       <div class="form-group">
         <label>🧩 最關鍵的設計決策</label>
         <ObjectListInput
+          :key="`designDecisions_${componentKey}`"
           v-model="form.designDecisions"
           :fields="decisionFields"
         />
@@ -53,14 +55,18 @@
       <!-- 8. 演進方向配圖（輪播） -->
       <div class="form-group">
         <!-- <label>🖼 演進方向配圖</label> -->
-        <ImageManager v-model="form.evolutionImages" :projectId="projectId" />
+        <ImageManager
+         :key="`evolutionImages_${componentKey}`"
+         v-model="form.evolutionImages" 
+         :projectId="projectId" 
+        />
       </div>
 
       <!-- 9. 引導至工程紀錄 -->
       <div class="form-group">
         <label>📘 引導至工程紀錄</label>
         <textarea v-model="form.caseStudyGuide" rows="2" class="form-control" placeholder="例如：點擊下方按鈕查看迭代過程中的工程決策與取捨"></textarea>
-        <button type="button" @click="goToCaseStudy" class="case-study-btn">📋 工程紀錄</button>
+        <!-- <button type="button" @click="goToCaseStudy" class="case-study-btn">📋 工程紀錄</button> -->
       </div>
 
       <!-- 10. GitHub URL -->
@@ -78,7 +84,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
-import { useRouter } from 'vue-router';
+// import { useRouter } from 'vue-router';
 import { fetchAdminProject, updateProfessionalContent } from '../../../api/index.api';
 import SingleImageUpload from '../../../components/admin/SingleImageUpload.vue';
 import ImageManager from '../../../components/admin/ImageManager.vue';
@@ -86,7 +92,8 @@ import ObjectListInput from '../../../components/admin/ObjectListInput.vue';
 // import type { ProfessionalDTO } from '../../../types/dto';
 
 const props = defineProps<{ projectId: string }>();
-const router = useRouter();
+// const router = useRouter();
+const componentKey = ref(0);
 
 // 定義表單結構（兼容後端 DTO，但新增幾個臨時欄位）
 const form = ref({
@@ -119,24 +126,24 @@ onMounted(async () => {
   const res = await fetchAdminProject(props.projectId);
   const prof = res.data.data!.professional;
   if (prof) {
-    // 從後端讀取現有資料
-    form.value.systemGoal = prof.systemGoal || '';
-    form.value.architectureDiagram = prof.architectureDiagram || '';
-    form.value.dataFlow = prof.dataFlow || '';
-    form.value.githubUrl = prof.githubUrl || '';
-    form.value.coreProblems = prof.coreProblems || [];
-    form.value.designDecisions = prof.designDecisions || [];
-    // 注意：後端可能沒有 boundary, evolutionDirection, evolutionImages, caseStudyGuide，
-    // 如果希望持久化，需修改後端 DTO；此處暫存於 localStorage 或僅前端用，儲存時忽略
-    // 但為了演示，我們將這些欄位也存到後端的某個字段（例如 impactAnalysis.scalability 之類），但會破壞語義。
-    // 這裡先只做前端展示，儲存時不發送這些字段（避免後端報錯）。
-    // 更佳做法：將這些新欄位合併到一個新對象中，並希望後端支援。但為了快速完成，我們可以存在 localStorage 或暫不持久化。
-  }
+  form.value.systemGoal = prof.systemGoal || '';
+  form.value.architectureDiagram = prof.architectureDiagram || '';
+  form.value.dataFlow = prof.dataFlow || '';
+  form.value.githubUrl = prof.githubUrl || '';
+  form.value.coreProblems = prof.coreProblems || [];
+  form.value.designDecisions = prof.designDecisions || [];
+  // ✅ 補上這四個欄位
+  form.value.boundary = prof.boundary || '';
+  form.value.evolutionDirection = prof.evolutionDirection || '';
+  form.value.evolutionImages = Array.isArray(prof.images) ? prof.images : [];
+  form.value.caseStudyGuide = prof.caseStudyGuide || '';
+}
+  componentKey.value++; // 讓 ObjectListInput 重新渲染以顯示新資料
 });
 
-function goToCaseStudy() {
-  router.push(`/admin/projects/${props.projectId}/case-study`);
-}
+// function goToCaseStudy() {
+//   router.push(`/admin/projects/${props.projectId}/case-study`);
+// }
 
 async function save() {
   const payload: any = {

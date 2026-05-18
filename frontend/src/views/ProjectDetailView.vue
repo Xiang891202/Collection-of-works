@@ -45,24 +45,46 @@
             ></span>
           </div>
         </section>
-        <template v-if="(currentData as any).demoUrl">
+        <!-- 展示版連結區塊 -->
+        <div class="demo-links">
+          <!-- 處理陣列格式 -->
+          <template v-if="Array.isArray((currentData as any).demoUrl)">
             <a
-                v-if="parseDemoUrl((currentData as any).demoUrl).user"
-                :href="parseDemoUrl((currentData as any).demoUrl).user"
-                target="_blank"
-                class="action-btn"
+              v-for="(link, idx) in (currentData as any).demoUrl"
+              :key="idx"
+              :href="link.url"
+              target="_blank"
+              class="action-btn"
             >
-                🚀 線上體驗
+              🚀 {{ link.label || '線上體驗' }}
+            </a>
+          </template>
+          <!-- 處理物件格式 { user, admin } -->
+          <template v-else-if="(currentData as any).demoUrl && typeof (currentData as any).demoUrl === 'object'">
+            <a
+              v-if="(currentData as any).demoUrl.user"
+              :href="(currentData as any).demoUrl.user"
+              target="_blank"
+              class="action-btn"
+            >
+              🚀 線上體驗
             </a>
             <a
-                v-if="parseDemoUrl((currentData as any).demoUrl).admin"
-                :href="parseDemoUrl((currentData as any).demoUrl).admin"
-                target="_blank"
-                class="action-btn"
+              v-if="(currentData as any).demoUrl.admin"
+              :href="(currentData as any).demoUrl.admin"
+              target="_blank"
+              class="action-btn"
             >
-                🔑 管理員入口
+              <!-- 🔑 管理員入口 -->
             </a>
-            </template>
+          </template>
+          <!-- 處理字串格式 -->
+          <template v-else-if="typeof (currentData as any).demoUrl === 'string'">
+            <a :href="(currentData as any).demoUrl" target="_blank" class="action-btn">
+              🚀 線上體驗
+            </a>
+          </template>
+        </div>
       </article>
     </div>
 
@@ -90,9 +112,9 @@
           </div>
         </section>
 
-        <!-- 架構圖 -->
+        <!-- 架構全景圖 -->
         <section v-if="(currentData as any).architectureDiagram">
-          <h2>📐 系統架構圖</h2>
+          <h2>📐 架構全景圖</h2>
           <img :src="(currentData as any).architectureDiagram" alt="架構圖" class="arch-img" />
         </section>
 
@@ -102,26 +124,24 @@
           <p class="code-block">{{ (currentData as any).dataFlow }}</p>
         </section>
 
-        <!-- 核心流程 -->
-        <section v-if="(currentData as any).keyProcesses?.length">
-          <h2>🔄 核心流程</h2>
-          <ul>
-            <li v-for="(kp, i) in (currentData as any).keyProcesses" :key="i">{{ kp }}</li>
-          </ul>
+        <!-- 邊界 -->
+        <section v-if="(currentData as any).boundary">
+          <h2>🔲 邊界</h2>
+          <p>{{ (currentData as any).boundary }}</p>
         </section>
 
-        <!-- 核心問題 -->
+        <!-- 最關鍵的架構挑戰 -->
         <section v-if="(currentData as any).coreProblems?.length">
-          <h2>⚠️ 核心工程問題</h2>
+          <h2>⚠️ 最關鍵的架構挑戰</h2>
           <div v-for="(cp, i) in (currentData as any).coreProblems" :key="i" class="problem-card">
             <h3>{{ cp.title }}</h3>
             <p>{{ cp.description }}</p>
           </div>
         </section>
 
-        <!-- 設計決策 -->
+        <!-- 最關鍵的設計決策 -->
         <section v-if="(currentData as any).designDecisions?.length">
-          <h2>🧠 設計決策</h2>
+          <h2>🧩 最關鍵的設計決策</h2>
           <div v-for="(dd, i) in (currentData as any).designDecisions" :key="i" class="decision-card">
             <h3>{{ dd.problem }}</h3>
             <p><strong>根因：</strong>{{ dd.rootCause }}</p>
@@ -130,70 +150,48 @@
           </div>
         </section>
 
-        <!-- Trade-off -->
-        <section v-if="(currentData as any).tradeOffs?.length">
-          <h2>⚖️ Trade-off</h2>
-          <div class="tradeoff-list">
-            <div v-for="(t, i) in (currentData as any).tradeOffs" :key="i" class="tradeoff-card">
-              <div class="tradeoff-header">{{ t.decision }}</div>
-              <div class="tradeoff-body">
-                <div class="tradeoff-row">
-                  <span class="tradeoff-label">選擇</span>
-                  <span>{{ t.chosen }}</span>
-                </div>
-                <div class="tradeoff-row">
-                  <span class="tradeoff-label">捨棄</span>
-                  <span>{{ t.sacrificed }}</span>
-                </div>
-                <div class="tradeoff-row">
-                  <span class="tradeoff-label">理由</span>
-                  <span>{{ t.reason }}</span>
-                </div>
-              </div>
-            </div>
+        <!-- 一個演進方向（文字） -->
+        <section v-if="(currentData as any).evolutionDirection">
+          <h2>🔭 一個演進方向</h2>
+          <p>{{ (currentData as any).evolutionDirection }}</p>
+        </section>
+
+        <!-- 演進方向配圖（輪播） -->
+        <section v-if="evolutionImages.length" class="carousel-section">
+          <h2>🖼 演進方向配圖</h2>
+          <div class="carousel">
+            <button @click="prevEvolutionImage" class="carousel-btn">‹</button>
+            <img :src="evolutionImages[evolutionImageIndex]" class="carousel-img" />
+            <button @click="nextEvolutionImage" class="carousel-btn">›</button>
+          </div>
+          <div class="carousel-dots">
+            <span
+              v-for="(_img, i) in evolutionImages"
+              :key="i"
+              class="dot"
+              :class="{ active: i === evolutionImageIndex }"
+              @click="evolutionImageIndex = Number(i)"
+            ></span>
           </div>
         </section>
 
-        <!-- 影響分析 -->
-        <section>
-          <h2>📊 系統影響分析</h2>
-          <div class="impact-grid">
-            <div><strong>可擴展性</strong><p>{{ (currentData as any).impactAnalysis?.scalability }}</p></div>
-            <div><strong>可維護性</strong><p>{{ (currentData as any).impactAnalysis?.maintainability }}</p></div>
-            <div><strong>可靠性</strong><p>{{ (currentData as any).impactAnalysis?.reliability }}</p></div>
-            <div><strong>一致性</strong><p>{{ (currentData as any).impactAnalysis?.consistency }}</p></div>
-            <div><strong>效能</strong><p>{{ (currentData as any).impactAnalysis?.performance }}</p></div>
-          </div>
-        </section>
-
-        <!-- 未來演進 -->
-        <section v-if="(currentData as any).futureEvolution?.length">
-          <h2>🔭 未來架構演進</h2>
-          <div v-for="(fe, i) in (currentData as any).futureEvolution" :key="i" class="evolution-card">
-            <strong>{{ fe.level }}</strong>
-            <p>{{ fe.plan }}</p>
-          </div>
-        </section>
-
-        <!-- 面試問題 -->
-        <section v-if="(currentData as any).interviewQuestions?.length">
-          <h2>📌 面試官可能會問</h2>
-          <ol>
-            <li v-for="(q, i) in (currentData as any).interviewQuestions" :key="i">{{ q }}</li>
-          </ol>
+        <!-- 引導至工程紀錄 -->
+        <section v-if="(currentData as any).caseStudyGuide">
+          <h2>📘 引導至工程紀錄</h2>
+          <p>{{ (currentData as any).caseStudyGuide }}</p>
         </section>
 
         <!-- GitHub 按鈕 -->
         <a
-          v-if="(currentData as any).githubUrl"
-          :href="(currentData as any).githubUrl"
-          target="_blank"
-          class="action-btn github-btn"
-        >
-          💻 GitHub
+            v-if="(currentData as any).githubUrl && (currentData as any).githubUrl.trim() !== ''"
+            :href="(currentData as any).githubUrl"
+            target="_blank"
+            class="action-btn github-btn"
+          >
+            💻 GitHub
         </a>
 
-        <!-- 工程紀錄按鈕 -->
+        <!-- 查看工程紀錄按鈕 -->
         <button @click="openCaseStudy(route.params.slug as string)" class="case-study-btn">
           📋 查看工程紀錄
         </button>
@@ -206,16 +204,110 @@
       <div v-if="isCaseStudyLoading && !caseStudyData" class="loading">載入工程紀錄中...</div>
       <article v-else-if="caseStudyData" class="case-study">
         <h1>工程紀錄</h1>
+
+        <!-- 初始假設 -->
         <section>
-          <h2>迭代目標</h2>
+          <h2>📐 初始假設</h2>
+          <div class="assumption-block">
+            <p><strong>架構假設：</strong> {{ caseStudyData.initialAssumption.architecture }}</p>
+            <p><strong>資料流假設：</strong> {{ caseStudyData.initialAssumption.dataFlow }}</p>
+            <p><strong>限制假設：</strong> {{ caseStudyData.initialAssumption.limitations }}</p>
+          </div>
+        </section>
+
+        <!-- 迭代目標 -->
+        <section>
+          <h2>🎯 迭代目標</h2>
           <p>{{ caseStudyData.iterationGoal }}</p>
         </section>
-        <section>
-          <h2>核心問題 ({{ caseStudyData.coreProblems.length }})</h2>
+
+        <!-- 核心問題 -->
+        <section v-if="caseStudyData.coreProblems?.length">
+          <h2>⚠️ 核心問題</h2>
           <div v-for="(p, i) in caseStudyData.coreProblems" :key="i" class="problem-card">
             <h3>{{ p.title }}</h3>
-            <p><strong>根因：</strong>{{ p.rootCause }}</p>
-            <p><strong>解法：</strong>{{ p.solution }}</p>
+            <p><strong>根因：</strong> {{ p.rootCause }}</p>
+            <p><strong>解法：</strong> {{ p.solution }}</p>
+            <p v-if="p.alternative"><strong>替代方案：</strong> {{ p.alternative }}</p>
+          </div>
+        </section>
+
+        <!-- 限制條件 -->
+        <section v-if="caseStudyData.constraints?.length">
+          <h2>🔒 限制條件</h2>
+          <ul>
+            <li v-for="(c, i) in caseStudyData.constraints" :key="i">
+              <strong>{{ c.constraint }}</strong>：{{ c.reason }}
+            </li>
+          </ul>
+        </section>
+
+        <!-- 工程決策 -->
+        <section v-if="caseStudyData.engineeringDecisions?.length">
+          <h2>🔧 工程決策</h2>
+          <div v-for="(d, i) in caseStudyData.engineeringDecisions" :key="i" class="decision-card">
+            <h3>{{ d.problem }}</h3>
+            <p><strong>決策：</strong> {{ d.decision }}</p>
+            <p><strong>為何：</strong> {{ d.why }}</p>
+          </div>
+        </section>
+
+        <!-- 技術影響 -->
+        <section>
+          <h2>⚙️ 技術影響</h2>
+          <div class="impact-grid">
+            <div><strong>可維護性</strong><p>{{ caseStudyData.technicalImpact.maintainability }}</p></div>
+            <div><strong>可擴展性</strong><p>{{ caseStudyData.technicalImpact.scalability }}</p></div>
+            <div><strong>可靠性</strong><p>{{ caseStudyData.technicalImpact.reliability }}</p></div>
+            <div><strong>效能</strong><p>{{ caseStudyData.technicalImpact.performance }}</p></div>
+            <div><strong>安全性</strong><p>{{ caseStudyData.technicalImpact.security }}</p></div>
+          </div>
+        </section>
+
+        <!-- Production 思維 -->
+        <section v-if="caseStudyData.productionThinking?.length">
+          <h2>🏭 Production 思維</h2>
+          <ul>
+            <li v-for="(pt, i) in caseStudyData.productionThinking" :key="i">
+              <strong>{{ pt.scenario }}</strong>：{{ pt.strategy }}
+            </li>
+          </ul>
+        </section>
+
+        <!-- 未來演進 -->
+        <section v-if="caseStudyData.futureEvolution?.length">
+          <h2>🔭 未來演進</h2>
+          <ul>
+            <li v-for="(fe, i) in caseStudyData.futureEvolution" :key="i">
+              <strong>{{ fe.scale }}</strong>：{{ fe.approach }}
+            </li>
+          </ul>
+        </section>
+
+        <!-- 面試問題 -->
+        <section v-if="caseStudyData.interviewQuestions?.length">
+          <h2>📌 面試問題</h2>
+          <ol>
+            <li v-for="(q, i) in caseStudyData.interviewQuestions" :key="i">{{ q }}</li>
+          </ol>
+        </section>
+
+        <!-- 架構圖輪播 -->
+        <section v-if="caseStudyDiagrams.length" class="carousel-section">
+          <h2>🖼 架構圖</h2>
+          <div class="carousel">
+            <button @click="prevDiagram" class="carousel-btn">‹</button>
+            <img :src="caseStudyDiagrams[diagramIndex]" class="carousel-img" />
+            <button @click="nextDiagram" class="carousel-btn">›</button>
+          </div>
+          <div class="carousel-dots">
+            <span
+              v-for="(_img, i) in caseStudyDiagrams"
+              :key="i"
+              class="dot"
+              :class="{ active: i === diagramIndex }"
+              @click="diagramIndex = Number(i)"
+            ></span>
           </div>
         </section>
       </article>
@@ -241,34 +333,60 @@ const {
   openCaseStudy,
   closeCaseStudy,
   cleanup,
-  parseDemoUrl,
+  // parseDemoUrl,
 } = useProjectDetail();
 
-// 展示版圖片相關
+// 展示版圖片
 const showcaseImages = computed(() => {
   if (currentMode.value === 'showcase' && showcaseData.value) {
     return showcaseData.value.images || [];
   }
   return [];
 });
-
 const currentImageIndex = ref(0);
+function nextImage() { if (showcaseImages.value.length) currentImageIndex.value = (currentImageIndex.value + 1) % showcaseImages.value.length; }
+function prevImage() { if (showcaseImages.value.length) currentImageIndex.value = (currentImageIndex.value - 1 + showcaseImages.value.length) % showcaseImages.value.length; }
 
-function nextImage() {
-  if (showcaseImages.value.length > 0) {
-    currentImageIndex.value = (currentImageIndex.value + 1) % showcaseImages.value.length;
+// 專業版演進方向配圖
+const evolutionImages = computed(() => {
+  if (currentMode.value === 'professional' && currentData.value) {
+    return (currentData.value as any).images || [];
   }
-}
+  return [];
+});
+const evolutionImageIndex = ref(0);
+function nextEvolutionImage() { if (evolutionImages.value.length) evolutionImageIndex.value = (evolutionImageIndex.value + 1) % evolutionImages.value.length; }
+function prevEvolutionImage() { if (evolutionImages.value.length) evolutionImageIndex.value = (evolutionImageIndex.value - 1 + evolutionImages.value.length) % evolutionImages.value.length; }
 
-function prevImage() {
-  if (showcaseImages.value.length > 0) {
-    currentImageIndex.value = (currentImageIndex.value - 1 + showcaseImages.value.length) % showcaseImages.value.length;
+// 工程紀錄架構圖
+const caseStudyDiagrams = computed(() => {
+  if (caseStudyData.value) {
+    return caseStudyData.value.diagrams?.map(d => d.url) || [];
   }
-}
+  return [];
+});
+const diagramIndex = ref(0);
+function nextDiagram() { if (caseStudyDiagrams.value.length) diagramIndex.value = (diagramIndex.value + 1) % caseStudyDiagrams.value.length; }
+function prevDiagram() { if (caseStudyDiagrams.value.length) diagramIndex.value = (diagramIndex.value - 1 + caseStudyDiagrams.value.length) % caseStudyDiagrams.value.length; }
 
 onMounted(() => loadProject(route.params.slug as string));
 onUnmounted(() => cleanup());
 </script>
+
+<style scoped>
+/* 原有樣式保持不變，可視需要新增 impact-grid 等 */
+.impact-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 16px;
+  margin-top: 12px;
+}
+.assumption-block {
+  background: var(--surface);
+  padding: 16px;
+  border-radius: var(--radius);
+}
+</style>
 
 <style scoped>
 article { max-width: 800px; }
@@ -355,13 +473,18 @@ h2 { border-bottom: 1px solid var(--border); padding-bottom: 8px; }
   align-items: center;
   justify-content: center;
   gap: 12px;
+  width: 100%;
 }
 .carousel-img {
+  width: 100%;
+  height: 400px;           /* 固定高度 */
   max-width: 100%;
-  max-height: 400px;
+  object-fit: contain;     /* 圖片完整顯示，不裁切，背景可能留白 */
   border-radius: var(--radius);
   border: 1px solid var(--border);
+  background: var(--surface); /* 留白區域背景色 */
 }
+/* 若希望填滿容器且裁切多餘部分，可改用 object-fit: cover */
 .carousel-btn {
   background: var(--surface);
   color: #fff;
@@ -386,5 +509,12 @@ h2 { border-bottom: 1px solid var(--border); padding-bottom: 8px; }
 }
 .dot.active {
   background: var(--accent);
+}
+
+.demo-links {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-top: 24px;
 }
 </style>

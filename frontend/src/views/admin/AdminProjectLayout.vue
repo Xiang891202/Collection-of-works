@@ -14,9 +14,10 @@
         <h3>發布設定</h3>
         <div class="status-row">
           <label>狀態：</label>
-          <select v-model="localStatus">
+          <select v-model="localStatus" :disabled="localStatus === 'deleted'">
             <option value="draft">草稿</option>
             <option value="active">已發布</option>
+            <option value="deleted" disabled>已封存 (唯讀)</option>
           </select>
         </div>
         <div class="publish-row">
@@ -26,6 +27,7 @@
               type="datetime-local"
               v-model="localPublishedAt"
               step="1"
+              :disabled="localStatus === 'deleted'"
               ref="datetimeInput"
             />
             <button type="button" @click="openDateTimePicker" class="calendar-btn" title="選擇日期時間">
@@ -33,11 +35,12 @@
             </button>
           </div>
         </div>
-        <button @click="handlePublish" class="publish-btn">套用發布設定</button>
+        <button v-if="localStatus !== 'deleted'" @click="handlePublish" class="publish-btn">套用發布設定</button>
+        <button v-else @click="handleRestore" class="restore-btn">從回收桶還原</button>
       </div>
     </aside>
     <main class="content">
-      <router-view :project-id="projectId" :is-new="isNew" />
+      <router-view :project-id="projectId" :is-new="isNew" :disabled="localStatus === 'deleted'" />
     </main>
   </div>
 </template>
@@ -45,14 +48,14 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import { publishProject, fetchAdminProject } from '../../api/index.api';
+import { publishProject, fetchAdminProject, restoreProject } from '../../api/index.api';
 
 const route = useRoute();
 const router = useRouter();
 const projectId = computed(() => route.params.id as string);
 const isNew = computed(() => route.path.includes('/new'));
 
-const localStatus = ref('draft');
+const localStatus = ref('');
 const localPublishedAt = ref('');
 const datetimeInput = ref<HTMLInputElement | null>(null);
 
@@ -61,13 +64,16 @@ const goBack = () => {
 };
 
 async function loadPublishInfo() {
-  if (isNew.value) return;
+  if (isNew.value) {
+    localStatus.value = 'draft';
+    return;
+  }
   try {
     const res = await fetchAdminProject(projectId.value);
-    if (res && res.data) {
-      const p = res.data as any;
-      console.log('載入發布資訊 - 原始 status:', p.status);  // 檢查這裡
-      localStatus.value = p.status === 'active' ? 'active' : 'draft'; // 強制比對
+    const p = res.data.data;   // ✅ 正確取得專案物件
+    if (p) {
+      localStatus.value = p.status === 'active' ? 'active' : 'draft';
+      // 處理 published_at 的格式轉換（保持原有邏輯）
       if (p.published_at) {
         const date = new Date(p.published_at);
         if (!isNaN(date.getTime())) {
@@ -112,6 +118,20 @@ async function handlePublish() {
   } catch (err: any) {
     console.error('儲存發布設定失敗', err);
     alert(err.response?.data?.error || '儲存失敗，請檢查後端日誌');
+  }
+}
+
+async function handleRestore() {
+  if (!projectId.value) return;
+  try {
+    await restoreProject(projectId.value);
+    alert('已還原為草稿，可繼續編輯');
+    // 重新載入頁面或重新取得專案資料
+    await loadPublishInfo();
+    // 刷新整個頁面（可選）
+    window.location.reload();
+  } catch (err: any) {
+    alert(err.response?.data?.error || '還原失敗');
   }
 }
 

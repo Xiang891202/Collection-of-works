@@ -12,6 +12,7 @@
     </div>
 
     <div class="table-wrapper">
+      <div v-if="isLoading" class="loading-spinner">載入中...</div>
       <table v-if="projects.length">
         <thead>
           <tr>
@@ -62,6 +63,7 @@ import type { AdminProjectListItemDTO } from '../../types/dto';
 const router = useRouter();
 const projects = ref<AdminProjectListItemDTO[]>([]);
 const filter = ref('active');
+const isLoading = ref(false);
 
 function formatDate(isoString: string): string {
   if (!isoString) return '—';
@@ -95,10 +97,10 @@ const goToEdit = (id: string) => {
   router.push(`/admin/projects/${id}`);
 };
 
-async function loadProjects() {
-  const res = await fetchAdminProjects(filter.value);
-  projects.value = res.data.data || [];
-}
+// async function loadProjects() {
+//   const res = await fetchAdminProjects(filter.value);
+//   projects.value = res.data.data || [];
+// }
 
 async function handleDelete(id: string) {
   try {
@@ -123,7 +125,27 @@ async function handleRestore(id: string) {
   }
 }
 
+async function loadProjects() {
+  isLoading.value = true;
+  try {
+    const res = await fetchAdminProjects(filter.value);
+    projects.value = res.data.data || [];
+  } catch (err) {
+    console.error(err);
+  } finally {
+    isLoading.value = false;
+  }
+}
+
 onMounted(loadProjects);
+
+// ✅ 新增：路由守衛監聽，每次進入此頁面就重新載入
+router.afterEach((to) => {
+  if (to.path === '/admin/dashboard') {
+    loadProjects();
+  }
+});
+
 </script>
 
 <style scoped>

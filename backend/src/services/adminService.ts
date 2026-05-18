@@ -92,6 +92,10 @@ export class AdminService {
 
   async updateProfessional(id: string, data: any): Promise<ProfessionalDTO> {
     await this.contentRepo.upsertProfessional(id, data);
+    if (data.githubUrl !== undefined) {
+      await this.projectRepo.updateMeta(id, { github_url: data.githubUrl });
+    }
+    // 若有其他需同步的欄位（如 architectureDiagram 若要存在主表），同理
     const raw = await this.contentRepo.getProfessionalContent(id);
     const project = await this.projectRepo.findById(id);
     return ProfessionalMapper.toDTO(raw, project);

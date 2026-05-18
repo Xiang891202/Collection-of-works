@@ -15,6 +15,11 @@ export class ProfessionalMapper {
       futureEvolution: raw.futureEvolution || [],
       interviewQuestions: raw.interviewQuestions || [],
       githubUrl: project?.github_url || null,
+      images: raw.images || [],   // ✅ 新增這一行
+      // ✅ 新增以下欄位
+      boundary: raw.boundary || '',
+      evolutionDirection: raw.evolutionDirection || '',
+      caseStudyGuide: raw.caseStudyGuide || '',
     };
   }
 

@@ -60,10 +60,16 @@ export function fetchCaseStudy(slug: string) {
 // =========================
 
 // 請求攔截器：自動帶 token
+// 在 api 實例的請求攔截器中，針對管理員 API 路徑設定無快取
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem('admin_token');
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
+  }
+  // ✅ 針對所有以 /admin 開頭的請求，禁止快取
+  if (config.url?.startsWith('/admin')) {
+    config.headers['Cache-Control'] = 'no-cache';
+    config.headers['Pragma'] = 'no-cache';
   }
   return config;
 });
@@ -82,7 +88,9 @@ export function fetchAdminProjects(status?: string) {
 
 // 取得單一專案完整資料
 export function fetchAdminProject(id: string) {
-  return api.get<ApiResponse<AdminProjectDetailDTO>>(`/admin/projects/${id}`);
+  return api.get<ApiResponse<AdminProjectDetailDTO>>(`/admin/projects/${id}`, {
+    params: { _t: Date.now() }   // 每次請求不同，繞過瀏覽器快取
+  });
 }
 
 // 新增專案

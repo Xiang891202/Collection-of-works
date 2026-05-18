@@ -65,9 +65,19 @@ app.use('/api/v1/admin/media', adminMediaRoutes);
 // 全域錯誤處理
 app.use(errorHandler);
 
-app.listen(config.port, () => {
-  console.log(`Server running on http://localhost:${config.port}`);
-  console.log(`Version: ${config.appVersion}`);
-});
+// app.listen(config.port, () => {
+//   console.log(`Server running on http://localhost:${config.port}`);
+//   console.log(`Version: ${config.appVersion}`);
+// });
+
+
+// 只在非測試環境下啟動伺服器
+if (process.env.NODE_ENV !== 'test') {
+  app.listen(config.port, () => {
+    console.log(`Server running on http://localhost:${config.port}`);
+    console.log(`Version: ${config.appVersion}`);
+  });
+}
+
 
 export default app;
