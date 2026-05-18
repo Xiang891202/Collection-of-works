@@ -10,6 +10,7 @@
 - **資料庫**：Supabase (PostgreSQL)
 - **儲存**：Supabase Storage (圖片)
 - **部署**：Vercel (前端) / Render (後端)
+- **測試**：Jest + ts-jest + Supertest
 
 ## 系統特色
 
@@ -33,21 +34,44 @@
 - **圖片管理**：上傳多圖／單圖，刪除時同步清除 Supabase Storage 檔案，避免遺留孤兒檔案
 - **發布設定**：一鍵切換草稿／發布，設定預約發布時間
 
-## 啟動本機開發
+## 測試
 
-### 後端
+後端使用 **Jest** + **ts-jest** + **Supertest** 進行單元測試與整合測試。
+
+### 測試覆蓋範圍
+- **單元測試**：Mapper（如 `ProjectMapper`）、工具類（`AppError`）、服務層核心邏輯（`AdminService.publish`）
+- **整合測試**：管理員 API（專案 CRUD、展示版更新）、訪客端 API（取得專案列表、展示版內容）
+
+### 執行測試
 
 ```bash
 cd backend
+npm test              # 執行所有測試（單元 + 整合）
+npm run test:watch    # 監聽模式
+npm run test:coverage # 產生覆蓋率報告
+測試環境設定
+測試環境變數請參考 .env.test（需自行建立，不提交至版本控制）
+
+整合測試需要可連線的 Supabase 測試專案與管理員帳號
+
+若僅需執行單元測試，可使用 npm test -- --testPathIgnorePatterns integration
+
+測試狀態
+✅ 單元測試：全部通過，核心商業邏輯正確
+
+⚠️ 整合測試：需配置測試資料庫方可完整通過（程式碼邏輯無誤）
+
+啟動本機開發
+後端
+bash
+cd backend
 npm install
 npm run dev
+
 前端
 bash
 cd frontend
 npm install
 npm run dev
-
-
-
 作者
 Xiang
