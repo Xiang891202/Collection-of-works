@@ -56,7 +56,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
-import { useRouter } from 'vue-router';
+import { useRouter, onBeforeRouteUpdate } from 'vue-router';
 import { fetchAdminProjects, softDeleteProject, restoreProject } from '../../api/index.api';
 import type { AdminProjectListItemDTO } from '../../types/dto';
 
@@ -139,8 +139,8 @@ async function loadProjects() {
 
 onMounted(loadProjects);
 
-// ✅ 新增：路由守衛監聽，每次進入此頁面就重新載入
-router.afterEach((to) => {
+// ✅ 修正：只監聽此組件網址更新，且組件銷毀時會自動移除監聽，不會有死迴圈
+onBeforeRouteUpdate((to, from) => {
   if (to.path === '/admin/dashboard') {
     loadProjects();
   }
