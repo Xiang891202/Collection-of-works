@@ -440,7 +440,11 @@ onUnmounted(() => cleanup());
 </style>
 
 <style scoped>
-article { max-width: 800px; }
+article {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 0 16px; /* 可選，手機版已有內邊距，桌面版也加一點避免貼邊 */
+}
 section { margin-bottom: 32px; }
 h2 { border-bottom: 1px solid var(--border); padding-bottom: 8px; }
 .code-block {
