@@ -30,7 +30,10 @@
         <!-- 圖片輪播 -->
         <section v-if="showcaseImages.length" class="carousel-section">
           <h2>🖼 系統畫面</h2>
-          <div class="carousel">
+          <div class="carousel"
+            @touchstart="showcaseSwipe.onTouchStart"
+            @touchmove="showcaseSwipe.onTouchMove"
+            @touchend="showcaseSwipe.onTouchEnd">
             <button @click="prevImage" class="carousel-btn">‹</button>
             <img :src="showcaseImages[currentImageIndex]" alt="展示圖片" class="carousel-img" />
             <button @click="nextImage" class="carousel-btn">›</button>
@@ -115,7 +118,12 @@
         <!-- 架構全景圖 -->
         <section v-if="(currentData as any).architectureDiagram">
           <h2>📐 架構全景圖</h2>
-          <img :src="(currentData as any).architectureDiagram" alt="架構圖" class="arch-img" />
+          <img 
+            :src="(currentData as any).architectureDiagram" 
+            alt="架構圖" 
+            class="arch-img" 
+            @click="openImage((currentData as any).architectureDiagram)"
+          />
         </section>
 
         <!-- 資料流 -->
@@ -159,7 +167,10 @@
         <!-- 演進方向配圖（輪播） -->
         <section v-if="evolutionImages.length" class="carousel-section">
           <h2>🖼 演進方向配圖</h2>
-          <div class="carousel">
+          <div class="carousel"
+            @touchstart="evolutionSwipe.onTouchStart"
+            @touchmove="evolutionSwipe.onTouchMove"
+            @touchend="evolutionSwipe.onTouchEnd">
             <button @click="prevEvolutionImage" class="carousel-btn">‹</button>
             <img :src="evolutionImages[evolutionImageIndex]" class="carousel-img" />
             <button @click="nextEvolutionImage" class="carousel-btn">›</button>
@@ -295,7 +306,10 @@
         <!-- 架構圖輪播 -->
         <section v-if="caseStudyDiagrams.length" class="carousel-section">
           <h2>🖼 架構圖</h2>
-          <div class="carousel">
+          <div class="carousel"
+            @touchstart="diagramSwipe.onTouchStart"
+            @touchmove="diagramSwipe.onTouchMove"
+            @touchend="diagramSwipe.onTouchEnd">
             <button @click="prevDiagram" class="carousel-btn">‹</button>
             <img :src="caseStudyDiagrams[diagramIndex]" class="carousel-img" />
             <button @click="nextDiagram" class="carousel-btn">›</button>
@@ -310,6 +324,18 @@
             ></span>
           </div>
         </section>
+
+        <section v-if="hasEnabledSupplements(caseStudyData?.supplements)">
+          <h2>📝 補充記錄</h2>
+          <div v-for="(sup, idx) in (caseStudyData?.supplements || []).filter(s => s.enabled)" :key="idx" class="supplement-card">
+            <h3>{{ sup.title }}</h3>
+            <p><strong>問題：</strong> {{ sup.problem }}</p>
+            <p><strong>根因：</strong> {{ sup.rootCause }}</p>
+            <p><strong>解決方式：</strong> {{ sup.solution }}</p>
+            <p><strong>預防措施：</strong> {{ sup.prevention }}</p>
+          </div>
+        </section>
+        
       </article>
     </div>
   </div>
@@ -319,6 +345,9 @@
 import { onMounted, onUnmounted, ref, computed } from 'vue';
 import { useRoute } from 'vue-router';
 import { useProjectDetail } from '../composables/useProjectDetail';
+import { useContentChecker } from '../composables/useContentChecker';
+import { useSwipe } from '../composables/useSwipe';
+
 
 const route = useRoute();
 const {
@@ -335,6 +364,8 @@ const {
   cleanup,
   // parseDemoUrl,
 } = useProjectDetail();
+
+const { hasEnabledSupplements } = useContentChecker();
 
 // 展示版圖片
 const showcaseImages = computed(() => {
@@ -354,6 +385,14 @@ const evolutionImages = computed(() => {
   }
   return [];
 });
+
+// 專業版 架構圖 點 看原始圖片
+const openImage = (url: string) => {
+  if (url) {
+    window.open(url, '_blank');
+  }
+};
+
 const evolutionImageIndex = ref(0);
 function nextEvolutionImage() { if (evolutionImages.value.length) evolutionImageIndex.value = (evolutionImageIndex.value + 1) % evolutionImages.value.length; }
 function prevEvolutionImage() { if (evolutionImages.value.length) evolutionImageIndex.value = (evolutionImageIndex.value - 1 + evolutionImages.value.length) % evolutionImages.value.length; }
@@ -368,6 +407,18 @@ const caseStudyDiagrams = computed(() => {
 const diagramIndex = ref(0);
 function nextDiagram() { if (caseStudyDiagrams.value.length) diagramIndex.value = (diagramIndex.value + 1) % caseStudyDiagrams.value.length; }
 function prevDiagram() { if (caseStudyDiagrams.value.length) diagramIndex.value = (diagramIndex.value - 1 + caseStudyDiagrams.value.length) % caseStudyDiagrams.value.length; }
+
+// 展示版圖片總數（計算屬性）
+const showcaseImagesLength = computed(() => showcaseImages.value.length);
+// 專業版演進方向配圖總數
+const evolutionImagesLength = computed(() => evolutionImages.value.length);
+// 工程紀錄架構圖總數
+const caseStudyDiagramsLength = computed(() => caseStudyDiagrams.value.length);
+
+// 建立滑動控制器
+const showcaseSwipe = useSwipe(currentImageIndex, showcaseImagesLength);
+const evolutionSwipe = useSwipe(evolutionImageIndex, evolutionImagesLength);
+const diagramSwipe = useSwipe(diagramIndex, caseStudyDiagramsLength);
 
 onMounted(() => loadProject(route.params.slug as string));
 onUnmounted(() => cleanup());
@@ -516,5 +567,100 @@ h2 { border-bottom: 1px solid var(--border); padding-bottom: 8px; }
   gap: 16px;
   flex-wrap: wrap;
   margin-top: 24px;
+}
+
+/* 專業版架構全景圖響應式 */
+.arch-img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+  margin: 0 auto;
+  border-radius: var(--radius);
+  cursor: pointer; /* 提示可點擊 */
+  object-fit: contain;
+}
+
+/* 手機版進一步優化 */
+@media (max-width: 768px) {
+  .arch-img {
+    max-width: 100%;
+    height: auto;
+    max-height: 400px; /* 限制最大高度，避免過長 */
+    object-fit: contain;
+  }
+  /* 防止整個文章區域橫向溢出 */
+  .professional {
+    overflow-x: hidden;
+  }
+}
+
+/* ========== 手機版優化 (≤768px) ========== */
+@media (max-width: 768px) {
+  /* 隱藏輪播箭頭 */
+  .carousel-btn {
+    display: none;
+  }
+  /* 調整輪播佈局：圖片在上，點點在下 */
+  .carousel {
+   touch-action: pan-y pinch-zoom; /* 允許垂直滾動、雙指縮放，禁止水平滾動 */
+    flex-direction: column;
+    gap: 8px;
+  }
+  .carousel-img {
+    order: 0;
+    height: 250px !important;
+    user-select: none;
+   -webkit-tap-highlight-color: transparent;
+  }
+  .carousel-dots {
+    order: 1;
+    margin-top: 8px;
+  }
+  /* 點點觸控區域放大 */
+  .dot {
+    width: 12px;
+    height: 12px;
+    margin: 0 6px;
+  }
+  /* 改善整體閱讀體驗：增加內邊距，縮小字體 */
+  article {
+    padding: 0 16px;
+  }
+  h1 {
+    font-size: 1.5rem;
+  }
+  h2 {
+    font-size: 1.2rem;
+    margin: 20px 0 12px;
+  }
+  .action-btn,
+  .case-study-btn,
+  .github-btn {
+    display: block;
+    width: 100%;
+    text-align: center;
+    margin: 12px 0;
+    padding: 12px;
+  }
+  .demo-links {
+    flex-direction: column;
+    gap: 12px;
+  }
+  /* 技術棧手機版改為垂直堆疊 */
+  .tech-stack {
+    grid-template-columns: 1fr !important;
+    gap: 12px;
+  }
+  /* 影響分析網格改為單列 */
+  .impact-grid {
+    grid-template-columns: 1fr !important;
+  }
+  /* 工程紀錄的卡片內邊距調小 */
+  .problem-card,
+  .decision-card,
+  .tradeoff-card,
+  .supplement-card {
+    padding: 12px;
+  }
 }
 </style>

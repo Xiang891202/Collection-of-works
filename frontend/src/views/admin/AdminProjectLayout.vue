@@ -254,4 +254,56 @@ select, input {
 .content {
   flex: 1;
 }
+
+/* 平板以上側邊欄固定寬度，內容區伸縮 */
+@media (min-width: 768px) {
+  .admin-layout {
+    display: flex;
+    gap: 32px;
+  }
+  .sidebar {
+    width: 240px;
+    flex-shrink: 0;
+  }
+  .content {
+    flex: 1;
+  }
+}
+/* 手機版側邊欄佈局調整 */
+@media (max-width: 767px) {
+  .admin-layout {
+    flex-direction: column;
+  }
+  .sidebar {
+    width: 100%;
+    margin-bottom: 20px;
+  }
+  .sidebar nav {
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .sidebar nav a {
+    flex: 1;
+    text-align: center;
+    padding: 8px;
+    font-size: 13px;
+  }
+  .back-btn {
+    margin-bottom: 16px;
+  }
+  .publish-section {
+    margin-top: 16px;
+  }
+  .datetime-wrapper {
+    flex-wrap: wrap;
+  }
+  .datetime-wrapper input {
+    width: 100%;
+  }
+  .calendar-btn {
+    margin-top: 8px;
+    width: 100%;
+  }
+}
 </style>

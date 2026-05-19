@@ -25,6 +25,7 @@ export class CaseStudyMapper {
       interviewQuestions: raw.interviewQuestions || [],
       diagrams: raw.diagrams || [],
       images: raw.images || [],   // ✅ 新增這一行
+      supplements: raw.supplements || [],
     };
   }
 

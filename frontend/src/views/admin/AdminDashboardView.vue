@@ -282,4 +282,84 @@ th {
   white-space: nowrap;
   font-size: 0.85rem;
 }
+
+/* 手機極小 */
+@media (max-width: 480px) {
+  .admin-dashboard {
+    padding: 0 12px;
+  }
+  h1 {
+    font-size: 1.5rem;
+  }
+  .col-actions {
+    gap: 4px;
+  }
+}
+
+/* ========== 手機板卡片式佈局（≤768px） ========== */
+@media (max-width: 768px) {
+  .table-wrapper {
+    overflow-x: visible;
+    margin: 0 -16px;
+    border-radius: 0;
+    border-left: none;
+    border-right: none;
+  }
+  table,
+  thead,
+  tbody,
+  tr,
+  th,
+  td {
+    display: block;
+  }
+  thead {
+    display: none;
+  }
+  tr {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    margin-bottom: 20px;
+    padding: 16px;
+  }
+  td {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    padding: 8px 0;
+    border-bottom: none;
+  }
+  /* 所有欄位的標籤固定寬度 */
+  .col-title:before,
+  .col-slug:before,
+  .col-status:before,
+  .col-date:before,
+  .col-actions:before {
+    font-weight: 600;
+    color: var(--text);
+    flex-shrink: 0;
+    width: 70px;
+  }
+  .col-title:before { content: "標題"; }
+  .col-slug:before { content: "Slug"; }
+  .col-status:before { content: "狀態"; }
+  .col-date:before { content: "更新時間"; }
+  .col-actions:before { content: "操作"; }
+
+  /* 操作按鈕組：橫排，靠右 */
+  .col-actions {
+    justify-content: flex-end;
+    flex-wrap: nowrap;
+    gap: 8px;
+  }
+  .col-actions .btn-icon {
+    flex: 0 0 auto;
+    margin: 0;
+  }
+  .status-badge {
+    display: inline-block;
+  }
+}
 </style>

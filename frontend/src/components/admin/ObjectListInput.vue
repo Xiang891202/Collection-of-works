@@ -3,8 +3,24 @@
     <div v-for="(item, idx) in modelValue" :key="idx" class="object-item">
       <div v-for="field in fields" :key="field.key" class="field">
         <label>{{ field.label }}</label>
-        <textarea v-if="field.type === 'textarea'" v-model="item[field.key]" rows="2" class="field-input"></textarea>
-        <input v-else v-model="item[field.key]" class="field-input" />
+        <!-- ✅ 新增 checkbox 類型 -->
+        <input
+          v-if="field.type === 'checkbox'"
+          type="checkbox"
+          v-model="item[field.key]"
+          class="field-checkbox"
+        />
+        <textarea
+          v-else-if="field.type === 'textarea'"
+          v-model="item[field.key]"
+          rows="2"
+          class="field-input"
+        ></textarea>
+        <input
+          v-else
+          v-model="item[field.key]"
+          class="field-input"
+        />
       </div>
       <button type="button" @click="remove(idx)" class="remove-btn">刪除</button>
     </div>
@@ -19,19 +35,40 @@ const props = defineProps<{
   modelValue: any[];
   fields: { key: string; label: string; type?: string }[];
 }>();
+
 const emit = defineEmits(['update:modelValue']);
 const modelValue = ref(props.modelValue);
+
 watch(modelValue, (val: any[]) => emit('update:modelValue', val), { deep: true });
 
 function add() {
   const newItem: any = {};
-  props.fields.forEach(f => { newItem[f.key] = ''; });
+  props.fields.forEach(f => {
+    if (f.type === 'checkbox') newItem[f.key] = false;
+    else newItem[f.key] = '';
+  });
   modelValue.value.push(newItem);
 }
-function remove(idx: number) { modelValue.value.splice(idx, 1); }
+
+function remove(idx: number) {
+  modelValue.value.splice(idx, 1);
+}
 </script>
 
 <style scoped>
+/* 原有樣式保持不變，新增 checkbox 樣式 */
+.field-checkbox {
+  width: auto;
+  margin-top: 4px;
+}
+.field-input {
+  width: 100%;
+  padding: 8px 10px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--text);
+}
 .object-list {
   display: flex;
   flex-direction: column;
@@ -53,14 +90,6 @@ function remove(idx: number) { modelValue.value.splice(idx, 1); }
   font-weight: 500;
   margin-bottom: 4px;
   color: var(--text-muted);
-}
-.field-input {
-  width: 100%;
-  padding: 8px 10px;
-  background: var(--bg);
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  color: var(--text);
 }
 .remove-btn {
   margin-top: 8px;

@@ -3,7 +3,7 @@ import { createRouter, createWebHistory } from 'vue-router';
 const router = createRouter({
   history: createWebHistory(),
   routes: [
-    // 公開路由...
+    // 公開路由（不變）
     { path: '/', name: 'home', component: () => import('../views/HomeView.vue') },
     { path: '/projects', name: 'projectList', component: () => import('../views/ProjectListView.vue') },
     { path: '/projects/:slug', name: 'projectDetail', component: () => import('../views/ProjectDetailView.vue') },
@@ -14,7 +14,6 @@ const router = createRouter({
       children: [
         { path: '', redirect: '/admin/login' },
         { path: 'login', name: 'adminLogin', component: () => import('../views/admin/AdminLoginView.vue') },
-        { path: 'meta', redirect: '/admin/dashboard' }, // 新增這一行
         {
           path: 'dashboard',
           name: 'adminDashboard',
@@ -26,7 +25,7 @@ const router = createRouter({
           component: () => import('../views/admin/AdminProjectLayout.vue'),
           meta: { requiresAuth: true },
           children: [
-            { path: '', component: () => import('../views/admin/project/ProjectMetaEdit.vue') }, // 直接渲染，不重定向
+            { path: '', redirect: 'meta' },
             { path: 'meta', component: () => import('../views/admin/project/ProjectMetaEdit.vue') },
           ],
         },
@@ -35,11 +34,11 @@ const router = createRouter({
           component: () => import('../views/admin/AdminProjectLayout.vue'),
           meta: { requiresAuth: true },
           children: [
-            { path: '', component: () => import('../views/admin/project/ProjectMetaEdit.vue') },
+            { path: '', component: () => import('../views/admin/project/ProjectMetaEdit.vue') },  // 空路徑直接渲染，不重定向
             { path: 'meta', component: () => import('../views/admin/project/ProjectMetaEdit.vue') },
-            { path: 'showcase', component: () => import('../views/admin/project/ProjectShowcaseEdit.vue') },
-            { path: 'professional', component: () => import('../views/admin/project/ProjectProfessionalEdit.vue') },
-            { path: 'case-study', component: () => import('../views/admin/project/ProjectCaseStudyEdit.vue') },
+            { path: 'showcase', component: () => import('../views/admin/components/ShowcaseEditor.vue') },
+            { path: 'professional', component: () => import('../views/admin/components/ProfessionalEditor.vue') },
+            { path: 'case-study', component: () => import('../views/admin/components/CaseStudyEditor.vue') },
           ],
         },
       ],

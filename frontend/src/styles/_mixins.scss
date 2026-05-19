@@ -1,0 +1,45 @@
+@use 'sass:map';
+@use './variables' as *;
+
+// 響應式媒體查詢
+@mixin respond($breakpoint) {
+  @if map.has-key($breakpoints, $breakpoint) {
+    @media (min-width: map.get($breakpoints, $breakpoint)) {
+      @content;
+    }
+  } @else {
+    @warn "Breakpoint `#{$breakpoint}` not found.";
+  }
+}
+
+// Flex 置中
+@mixin flex-center($direction: row) {
+  display: flex;
+  flex-direction: $direction;
+  align-items: center;
+  justify-content: center;
+}
+
+// 卡片樣式
+@mixin card-style {
+  background: $surface;
+  border: 1px solid $border;
+  border-radius: $radius;
+  transition: border-color 0.2s;
+  &:hover {
+    border-color: $accent;
+  }
+}
+
+// 響應式網格
+@mixin grid($columns: 1, $gap: $spacing-5) {
+  display: grid;
+  grid-template-columns: repeat($columns, 1fr);
+  gap: $gap;
+  @include respond('md') {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  @include respond('lg') {
+    grid-template-columns: repeat($columns, 1fr);
+  }
+}

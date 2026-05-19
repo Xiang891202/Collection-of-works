@@ -136,8 +136,22 @@ export interface CaseStudyDTO {
     type: string;
     url: string;
   }[];
-  images: string[];
+  images: string[];   // 新增
+  supplements?: Supplement[];
 }
+
+// =========================
+// 工程紀錄-補充區域完整 DTO
+// =========================
+export interface Supplement {
+  enabled: boolean;
+  title: string;
+  problem: string;
+  rootCause: string;
+  solution: string;
+  prevention: string;
+}
+
 
 // =========================
 // 專案列表卡片 DTO

@@ -94,7 +94,7 @@
       <div class="form-group">
         <label>🔭 未來演進</label>
         <ObjectListInput
-          :key="`futureEvolution_${componentKey}`" 
+          :key="`futureEvolution_${componentKey}`"
           v-model="form.futureEvolution"
           :fields="futureEvolutionFields"
         />
@@ -103,17 +103,24 @@
       <!-- 面試問題 -->
       <div class="form-group">
         <label>📌 面試問題</label>
-        <DynamicListInput 
-        :key="`interviewQuestions_${componentKey}`"
-        v-model="form.interviewQuestions" />
+        <DynamicListInput :key="`interviewQuestions_${componentKey}`" v-model="form.interviewQuestions" />
       </div>
 
       <!-- 架構圖（輪播多圖） -->
       <div class="form-group">
         <label>🖼 架構圖（輪播）</label>
-        <ImageManager 
-        :key="`diagramImages_${componentKey}`"
-        v-model="diagramImages" :projectId="projectId" />
+        <ImageManager :key="`diagramImages_${componentKey}`" v-model="diagramImages" :projectId="projectId" />
+      </div>
+
+      <!-- 補充記錄區域 -->
+      <div class="form-group">
+        <label>📝 補充記錄</label>
+        <ObjectListInput
+          :key="`supplements_${componentKey}`"
+          v-model="form.supplements"
+          :fields="supplementFields"
+        />
+        <p class="hint">可記錄開發過程中的典型問題修復，訪客端只顯示「啟用」的項目。</p>
       </div>
 
       <div class="form-actions">
@@ -129,16 +136,65 @@ import { fetchAdminProject, updateCaseStudyContent } from '../../../api/index.ap
 import DynamicListInput from '../../../components/admin/DynamicListInput.vue';
 import ObjectListInput from '../../../components/admin/ObjectListInput.vue';
 import ImageManager from '../../../components/admin/ImageManager.vue';
-import type { CaseStudyDTO } from '../../../types/dto';
 
-const props = defineProps<{ projectId: string }>();
+// 補充記錄型別
+interface Supplement {
+  enabled: boolean;
+  title: string;
+  problem: string;
+  rootCause: string;
+  solution: string;
+  prevention: string;
+}
+
+// 表單完整型別
+interface CaseStudyForm {
+  initialAssumption: {
+    architecture: string;
+    dataFlow: string;
+    limitations: string;
+  };
+  iterationGoal: string;
+  coreProblems: Array<{
+    title: string;
+    rootCause: string;
+    solution: string;
+    alternative: string;
+  }>;
+  constraints: Array<{
+    constraint: string;
+    reason: string;
+  }>;
+  engineeringDecisions: Array<{
+    problem: string;
+    decision: string;
+    why: string;
+  }>;
+  technicalImpact: {
+    maintainability: string;
+    scalability: string;
+    reliability: string;
+    performance: string;
+    security: string;
+  };
+  productionThinking: Array<{
+    scenario: string;
+    strategy: string;
+  }>;
+  futureEvolution: Array<{
+    scale: string;
+    approach: string;
+  }>;
+  interviewQuestions: string[];
+  supplements: Supplement[];
+}
+
+const props = defineProps<{ projectId: string; disabled?: boolean }>();
+
 const componentKey = ref(0);
-
-// 專門存放架構圖片的 URL 陣列
 const diagramImages = ref<string[]>([]);
 
-// 明確定義 form 的類型，避免 TypeScript 推斷為 never
-const form = ref<Omit<CaseStudyDTO, 'diagrams'>>({
+const form = ref<CaseStudyForm>({
   initialAssumption: { architecture: '', dataFlow: '', limitations: '' },
   iterationGoal: '',
   coreProblems: [],
@@ -148,7 +204,7 @@ const form = ref<Omit<CaseStudyDTO, 'diagrams'>>({
   productionThinking: [],
   futureEvolution: [],
   interviewQuestions: [],
-  images: [],
+  supplements: [],
 });
 
 // ObjectListInput 欄位定義
@@ -175,16 +231,22 @@ const futureEvolutionFields = [
   { key: 'scale', label: '規模', type: 'text' },
   { key: 'approach', label: '方法', type: 'textarea' },
 ];
+const supplementFields = [
+  { key: 'enabled', label: '啟用', type: 'checkbox' },
+  { key: 'title', label: '標題', type: 'text' },
+  { key: 'problem', label: '問題描述', type: 'textarea' },
+  { key: 'rootCause', label: '根本原因', type: 'textarea' },
+  { key: 'solution', label: '解決方式', type: 'textarea' },
+  { key: 'prevention', label: '未來預防措施', type: 'textarea' },
+];
 
-onMounted(async () => {
+async function loadData() {
   const res = await fetchAdminProject(props.projectId);
-  const cs = res.data.data!.caseStudy;
+  const cs = res.data.data?.caseStudy;
   if (cs) {
-    // 將後端的 diagrams 轉為 diagramImages（純 URL 陣列）
     if (cs.diagrams && Array.isArray(cs.diagrams)) {
-      diagramImages.value = cs.diagrams.map(d => d.url);
+      diagramImages.value = cs.diagrams.map((d: any) => d.url);
     }
-    // 其餘欄位直接賦值（確保類型匹配）
     form.value = {
       initialAssumption: cs.initialAssumption || { architecture: '', dataFlow: '', limitations: '' },
       iterationGoal: cs.iterationGoal || '',
@@ -195,11 +257,11 @@ onMounted(async () => {
       productionThinking: cs.productionThinking || [],
       futureEvolution: cs.futureEvolution || [],
       interviewQuestions: cs.interviewQuestions || [],
-      images: cs.images || [],
+      supplements: cs.supplements || [],
     };
+    componentKey.value++;
   }
-  componentKey.value++; // 讓 DynamicListInput 重新渲染以顯示新資料
-});
+}
 
 async function save() {
   const diagramsPayload = diagramImages.value.map((url, idx) => ({
@@ -207,75 +269,30 @@ async function save() {
     url,
   }));
 
-  const payload: CaseStudyDTO = {
+  const payload = {
     ...form.value,
     diagrams: diagramsPayload,
   };
 
   await updateCaseStudyContent(props.projectId, payload);
   alert('工程紀錄已儲存');
+  await loadData();
 }
+
+onMounted(loadData);
 </script>
 
 <style scoped>
-.case-study-editor {
-  max-width: 1000px;
-  margin: 0 auto;
-}
-.case-study-form {
-  margin-top: 24px;
-  display: flex;
-  flex-direction: column;
-  gap: 28px;
-}
-.form-section {
-  border-top: 1px solid var(--border);
-  padding-top: 16px;
-  margin-top: 8px;
-}
-.form-section h3 {
-  margin-bottom: 16px;
-  font-size: 1.1rem;
-}
-.form-group {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-.form-group label {
-  font-weight: 600;
-  font-size: 0.9rem;
-  color: var(--text);
-}
-.form-control {
-  padding: 10px 12px;
-  background: var(--bg);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  color: var(--text);
-  font-size: 0.9rem;
-  font-family: inherit;
-  resize: vertical;
-}
-.form-control:focus {
-  outline: none;
-  border-color: var(--accent);
-}
-.form-actions {
-  text-align: right;
-  margin-top: 16px;
-}
-.btn-primary {
-  background: var(--accent);
-  color: white;
-  border: none;
-  padding: 10px 24px;
-  border-radius: var(--radius);
-  font-size: 1rem;
-  cursor: pointer;
-  transition: opacity 0.2s;
-}
-.btn-primary:hover {
-  opacity: 0.85;
-}
+/* 保持原有樣式不變 */
+.case-study-editor { max-width: 1000px; margin: 0 auto; }
+.case-study-form { margin-top: 24px; display: flex; flex-direction: column; gap: 28px; }
+.form-section { border-top: 1px solid var(--border); padding-top: 16px; margin-top: 8px; }
+.form-section h3 { margin-bottom: 16px; font-size: 1.1rem; }
+.form-group { display: flex; flex-direction: column; gap: 8px; }
+.form-group label { font-weight: 600; font-size: 0.9rem; color: var(--text); }
+.form-control { padding: 10px 12px; background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius); color: var(--text); font-size: 0.9rem; font-family: inherit; resize: vertical; }
+.form-control:focus { outline: none; border-color: var(--accent); }
+.form-actions { text-align: right; margin-top: 16px; }
+.btn-primary { background: var(--accent); color: white; border: none; padding: 10px 24px; border-radius: var(--radius); font-size: 1rem; cursor: pointer; transition: opacity 0.2s; }
+.btn-primary:hover { opacity: 0.85; }
 </style>
