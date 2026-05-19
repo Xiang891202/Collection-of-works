@@ -140,7 +140,7 @@ async function loadProjects() {
 onMounted(loadProjects);
 
 // ✅ 修正：只監聽此組件網址更新，且組件銷毀時會自動移除監聽，不會有死迴圈
-onBeforeRouteUpdate((to, from) => {
+onBeforeRouteUpdate((to) => {
   if (to.path === '/admin/dashboard') {
     loadProjects();
   }

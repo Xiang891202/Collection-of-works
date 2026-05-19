@@ -25,7 +25,8 @@ const router = createRouter({
           component: () => import('../views/admin/AdminProjectLayout.vue'),
           meta: { requiresAuth: true },
           children: [
-            { path: '', redirect: 'meta' },
+            // ✅ 修改這裡：空路徑直接渲染組件，不要寫 redirect: 'meta'
+            { path: '', component: () => import('../views/admin/project/ProjectMetaEdit.vue') },
             { path: 'meta', component: () => import('../views/admin/project/ProjectMetaEdit.vue') },
           ],
         },
