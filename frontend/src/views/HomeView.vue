@@ -1,7 +1,7 @@
 <template>
   <div class="home">
     <h1>同一份專案，不同認知層級</h1>
-    <p class="subtitle">這不是一般的作品集，而是一個知識重構系統</p>
+    <p class="subtitle">這是一個知識重構系統</p>
 
     <div class="modes">
       <div class="mode-card">

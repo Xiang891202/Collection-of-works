@@ -8,7 +8,7 @@
       <h1>Xiang</h1>
       <p class="title">全端開發者 / 系統設計愛好者</p>
       <p class="bio">
-        熱愛建構高效、可維護的系統，專注於 Vue.js、Node.js 與 Supabase。<br>
+        建構高效、可維護的系統，專注於 Vue.js、Node.js 與 Supabase。<br>
                 相信好的程式碼不只是解決問題，更能傳遞知識。
       </p>
     </div>
