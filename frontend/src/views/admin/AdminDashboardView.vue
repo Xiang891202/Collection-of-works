@@ -97,11 +97,6 @@ const goToEdit = (id: string) => {
   router.push(`/admin/projects/${id}`);
 };
 
-// async function loadProjects() {
-//   const res = await fetchAdminProjects(filter.value);
-//   projects.value = res.data.data || [];
-// }
-
 async function handleDelete(id: string) {
   try {
     await softDeleteProject(id);

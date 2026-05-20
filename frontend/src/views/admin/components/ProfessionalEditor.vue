@@ -16,10 +16,20 @@
         <label>📡 資料流</label>
         <textarea v-model="form.dataFlow" rows="4" class="form-control" :disabled="disabled"></textarea>
       </div>
+      <!-- 資料流圖片 -->
+      <div class="form-group">
+        <label>📡 資料流圖片</label>
+        <SingleImageUpload v-model="form.dataFlowImage" :projectId="projectId" />
+      </div>
 
       <div class="form-group">
         <label>🔲 邊界</label>
         <textarea v-model="form.boundary" rows="3" class="form-control" :disabled="disabled"></textarea>
+      </div>
+      <!-- 邊界圖片 -->
+      <div class="form-group">
+        <label>🔲 邊界圖片</label>
+        <SingleImageUpload v-model="form.boundaryImage" :projectId="projectId" />
       </div>
 
       <div class="form-group">
@@ -86,6 +96,8 @@ interface ProfessionalForm {
   evolutionImages: string[];
   caseStudyGuide: string;
   githubUrl: string;
+  dataFlowImage: string;
+  boundaryImage: string;
 }
 
 const props = defineProps<{ projectId: string; disabled?: boolean }>();
@@ -102,6 +114,8 @@ const form = ref<ProfessionalForm>({
   evolutionImages: [],
   caseStudyGuide: '',
   githubUrl: '',
+  dataFlowImage: '',
+  boundaryImage: '',
 });
 
 const challengeFields = [
@@ -129,6 +143,8 @@ async function loadData() {
       evolutionImages: prof.images || [],
       caseStudyGuide: prof.caseStudyGuide || '',
       githubUrl: prof.githubUrl || '',
+      dataFlowImage: prof.dataFlowImage || '',
+      boundaryImage: prof.boundaryImage || '',
     };
     componentKey.value++;
   }
@@ -158,6 +174,8 @@ async function save() {
     },
     futureEvolution: [],
     interviewQuestions: [],
+    dataFlowImage: form.value.dataFlowImage || '',
+    boundaryImage: form.value.boundaryImage || '',
   };
   await updateProfessionalContent(props.projectId, payload);
   alert('專業版已儲存');

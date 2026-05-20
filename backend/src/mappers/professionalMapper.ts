@@ -20,6 +20,8 @@ export class ProfessionalMapper {
       boundary: raw.boundary || '',
       evolutionDirection: raw.evolutionDirection || '',
       caseStudyGuide: raw.caseStudyGuide || '',
+      dataFlowImage: raw.dataFlowImage || '',
+      boundaryImage: raw.boundaryImage || '',
     };
   }
 

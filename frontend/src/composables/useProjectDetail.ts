@@ -24,7 +24,6 @@ const professionalData = ref<ProfessionalDTO | null>(null);
 const caseStudyPreview = ref<CaseStudyPreviewDTO | null>(null);
 const caseStudyData = ref<CaseStudyDTO | null>(null);
 
-
 // 工程紀錄開關
 const showCaseStudy = ref(false);
 
@@ -60,8 +59,6 @@ const currentData = computed<any>(() => {
 });
 
 // 載入專案
-// 載入專案（頁面初始化）
-// 在 loadProject 中
 async function loadProject(slug: string) {
   cancelPending();
   showCaseStudy.value = false;
@@ -73,7 +70,6 @@ async function loadProject(slug: string) {
       const data = JSON.parse(cached);
       if (currentMode.value === 'showcase') showcaseData.value = data;
       else professionalData.value = data;
-      // 不設 isLoading 為 false，背景更新
     } catch (e) {}
   } else {
     isLoading.value = true;
@@ -85,7 +81,9 @@ async function loadProject(slug: string) {
     if (currentMode.value === 'showcase') showcaseData.value = data as ShowcaseDTO;
     else professionalData.value = data as ProfessionalDTO;
     localStorage.setItem(cacheKey, JSON.stringify(data));
-  } catch (err) { /* ... */ } finally {
+  } catch (err) {
+    /* ... */
+  } finally {
     isLoading.value = false;
   }
 }
@@ -105,7 +103,7 @@ async function preloadCaseStudyPreview(slug: string) {
   } catch { /* silent */ }
 }
 
-// 切換模式（匯出版本）
+// 切換模式
 export function switchMode(mode: 'showcase' | 'professional', slug: string) {
   cancelPending();
   currentMode.value = mode;
@@ -134,7 +132,7 @@ export function switchMode(mode: 'showcase' | 'professional', slug: string) {
   });
 }
 
-// 打開工程紀錄
+// 打開工程紀錄（必須在 useProjectDetail 中被返回）
 function openCaseStudy(slug: string) {
   cancelPending();
   showCaseStudy.value = true;
@@ -171,6 +169,7 @@ export function parseDemoUrl(demoUrl: string | { user?: string; admin?: string }
   return { user: demoUrl, admin: undefined };
 }
 
+// ✅ 重要：確保所有需要的方法都被返回
 export function useProjectDetail() {
   return {
     currentMode,
@@ -184,8 +183,8 @@ export function useProjectDetail() {
     isCaseStudyLoading,
     currentData,
     loadProject,
-    openCaseStudy,
-    closeCaseStudy,
+    openCaseStudy,      // ✅ 必須包含
+    closeCaseStudy,     // ✅ 必須包含
     cleanup,
     parseDemoUrl,
   };

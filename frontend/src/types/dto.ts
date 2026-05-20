@@ -79,6 +79,8 @@ export interface ProfessionalDTO {
   interviewQuestions: string[];
   images: string[];   // 新增
   githubUrl: string | null;
+  dataFlowImage?: string;
+  boundaryImage?: string;
 }
 
 // =========================
