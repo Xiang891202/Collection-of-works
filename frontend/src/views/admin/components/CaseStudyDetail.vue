@@ -1,8 +1,14 @@
 <template>
   <article class="case-study">
+    <div class="back-nav">
+      <button @click="goBackToProfessional" class="back-to-professional-btn">
+        ← 返回專業版
+      </button>
+    </div>
+
     <h1>工程紀錄</h1>
     
-    <!-- 初始假設（只有當至少一個欄位有內容時才顯示） -->
+    <!-- 其餘內容保持不變 -->
     <section v-if="hasInitialAssumption">
       <h2>📐 初始假設</h2>
       <div class="assumption-block">
@@ -12,13 +18,11 @@
       </div>
     </section>
     
-    <!-- 迭代目標 -->
     <section v-if="data.iterationGoal">
       <h2>🎯 迭代目標</h2>
       <p v-html="formatText(data.iterationGoal)"></p>
     </section>
     
-    <!-- 核心問題 -->
     <section v-if="data.coreProblems?.length">
       <h2>⚠️ 核心問題</h2>
       <div v-for="(p, i) in data.coreProblems" :key="i" class="problem-card">
@@ -29,7 +33,6 @@
       </div>
     </section>
 
-    <!-- 限制條件 -->
     <section v-if="data.constraints?.length">
       <h2>🔒 限制條件</h2>
       <ul>
@@ -39,7 +42,6 @@
       </ul>
     </section>
 
-    <!-- 工程決策 -->
     <section v-if="data.engineeringDecisions?.length">
       <h2>🔧 工程決策</h2>
       <div v-for="(d, i) in data.engineeringDecisions" :key="i" class="decision-card">
@@ -49,7 +51,6 @@
       </div>
     </section>
 
-    <!-- 技術影響（五個欄位有任何一個有內容就顯示） -->
     <section v-if="hasTechnicalImpact">
       <h2>⚙️ 技術影響</h2>
       <div class="impact-grid">
@@ -61,7 +62,6 @@
       </div>
     </section>
 
-    <!-- Production 思維 -->
     <section v-if="data.productionThinking?.length">
       <h2>🏭 Production 思維</h2>
       <ul>
@@ -71,7 +71,6 @@
       </ul>
     </section>
 
-    <!-- 未來演進 -->
     <section v-if="data.futureEvolution?.length">
       <h2>🔭 未來演進</h2>
       <ul>
@@ -81,7 +80,6 @@
       </ul>
     </section>
 
-    <!-- 面試問題 -->
     <section v-if="data.interviewQuestions?.length">
       <h2>📌 面試問題</h2>
       <ol>
@@ -89,13 +87,11 @@
       </ol>
     </section>
 
-    <!-- 架構圖輪播（無圖片時不顯示整個區塊） -->
     <section v-if="diagrams.length" class="carousel-section">
       <h2>🖼 架構圖</h2>
       <ImageCarousel :images="diagrams" />
     </section>
 
-    <!-- 補充記錄 -->
     <section v-if="hasEnabledSupplements">
       <h2>📝 補充記錄</h2>
       <div v-for="(sup, idx) in enabledSupplements" :key="idx" class="supplement-card">
@@ -110,25 +106,45 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, onMounted } from 'vue';
+// import { useRouter } from 'vue-router';
 import type { CaseStudyDTO } from '../../../types/dto';
 import { formatText } from '../../../utils/textFormatter';
 import ImageCarousel from '../../../components/common/ImageCarousel.vue';
+// import { currentMode } from '../../../composables/useProjectDetail';
 
-const props = defineProps<{ data: CaseStudyDTO }>();
+const props = defineProps<{ 
+  data: CaseStudyDTO; 
+  projectId?: string;
+}>();
 
-// 如果不再需要這個 emit，也可以刪除
-// const emit = defineEmits<{
-//   (e: 'openDiagrams', images: string[], index: number): void;
-// }>();
+// ✅ 新增 close 事件
+const emit = defineEmits<{
+  (e: 'close'): void;
+}>();
+
+
+// const router = useRouter();
+
+// 進入頁面時滾動到頂部
+onMounted(() => {
+  window.scrollTo(0, 0);
+});
 
 const diagrams = computed(() => props.data.diagrams?.map(d => d.url) || []);
 
-// ✅ 刪除了 nextDiagram, prevDiagram, openDiagrams 函數
-// ✅ 刪除了 diagramIndex ref
-// ✅ ImageCarousel 元件會自己處理輪播和點擊放大
+// 從當前 URL 路徑中解析出 slug
+// function getSlugFromUrl(): string | null {
+//   // 路徑格式如 /projects/beauty-crm
+//   const match = window.location.pathname.match(/\/projects\/([^/?]+)/);
+//   return match ? match[1] : null;
+// }
 
-// 其他 computed 保持不變
+// 返回專業版
+function goBackToProfessional() {
+  emit('close');
+}
+
 const enabledSupplements = computed(() => {
   return props.data.supplements?.filter(s => s.enabled === true) || [];
 });
@@ -146,129 +162,57 @@ const hasTechnicalImpact = computed(() => {
 </script>
 
 <style scoped>
-/* 樣式保持原有 */
-/* 輪播容器固定佈局 */
-/* 替換原有的輪播樣式 */
-.carousel-container {
-  position: relative;
-  width: 100%;
-  border-radius: var(--radius);
-  overflow: hidden;
+/* 強制整個頁面不超出寬度 */
+.case-study {
+  max-width: 100%;
+  overflow-x: hidden;
+  word-break: break-word;
+  overflow-wrap: break-word;
+}
+
+/* 補充記錄卡片內文字換行 */
+.supplement-card,
+.case-study p,
+.case-study li,
+.case-study div:not(.carousel-main) {
+  word-break: break-word;
+  overflow-wrap: break-word;
+  white-space: normal;
+}
+
+/* 程式碼區塊強制換行 */
+pre,
+code {
+  white-space: pre-wrap;
+  word-break: break-all;
+}
+
+/* 返回按鈕區域 */
+.back-nav {
+  margin-bottom: 1rem;
+}
+
+.back-to-professional-btn {
   background: var(--surface);
-}
-
-.carousel {
-  position: relative;
-  width: 100%;
-}
-
-.carousel-image-wrapper {
-  position: relative;
-  width: 100%;
-  background: var(--bg);
-  overflow: hidden;
-}
-
-/* 桌面版 */
-@media (min-width: 1024px) {
-  .carousel-image-wrapper {
-    aspect-ratio: 16 / 9;
-  }
-}
-
-/* 平板 */
-@media (min-width: 768px) and (max-width: 1023px) {
-  .carousel-image-wrapper {
-    aspect-ratio: 4 / 3;
-  }
-}
-
-/* 手機 */
-@media (max-width: 767px) {
-  .carousel-image-wrapper {
-    aspect-ratio: 3 / 4;
-  }
-}
-
-.carousel-img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;  /* 關鍵：填滿容器不變形 */
-  cursor: pointer;
-  transition: transform 0.3s ease;
-}
-
-.carousel-img:hover {
-  transform: scale(1.02);
-}
-
-.carousel-btn {
-  position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 40px;
-  height: 40px;
-  background: rgba(0, 0, 0, 0.5);
-  border: none;
-  border-radius: 50%;
-  color: white;
-  font-size: 24px;
-  cursor: pointer;
-  z-index: 10;
-  transition: background 0.2s;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.carousel-btn:hover {
-  background: rgba(0, 0, 0, 0.8);
-}
-
-.carousel-btn.prev {
-  left: 16px;
-}
-
-.carousel-btn.next {
-  right: 16px;
-}
-
-.carousel-dots {
-  display: flex;
-  justify-content: center;
-  gap: 10px;
-  margin-top: 16px;
-}
-
-.dot {
-  width: 8px;
-  height: 8px;
-  background: var(--text-muted);
-  border-radius: 50%;
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 14px;
   cursor: pointer;
   transition: all 0.2s;
 }
 
-.dot.active {
+.back-to-professional-btn:hover {
   background: var(--accent);
-  width: 24px;
-  border-radius: 4px;
+  color: white;
+  border-color: var(--accent);
 }
 
-/* 手機板按鈕調整 */
 @media (max-width: 768px) {
-  .carousel-btn {
-    width: 32px;
-    height: 32px;
-    font-size: 18px;
-  }
-  
-  .carousel-btn.prev {
-    left: 8px;
-  }
-  
-  .carousel-btn.next {
-    right: 8px;
+  .back-to-professional-btn {
+    padding: 4px 10px;
+    font-size: 12px;
   }
 }
 </style>

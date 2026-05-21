@@ -21,22 +21,25 @@
 import { ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { currentMode } from './composables/useProjectDetail';
+import { useProjectDetail } from './composables/useProjectDetail';
+const { loadProject } = useProjectDetail();
 
 const route = useRoute();
 const router = useRouter();
 const viewKey = ref(0);
 
 function toggleMode() {
-  currentMode.value = currentMode.value === 'showcase' ? 'professional' : 'showcase';
-  viewKey.value++;
-  window.scrollTo(0, 0); // 滾動到最上面
-
-  if (route.params.slug) {
-    router.replace({
-      path: route.path,
-      query: { mode: currentMode.value },
+  const newMode = currentMode.value === 'showcase' ? 'professional' : 'showcase';
+  currentMode.value = newMode;
+  const slug = route.params.slug as string;
+  if (slug) {
+    router.push({
+      path: `/projects/${slug}`,
+      query: { mode: newMode }
     });
+    loadProject(slug);  // 強制重新載入對應模式的資料
   }
+  window.scrollTo(0, 0);
 }
 </script>
 

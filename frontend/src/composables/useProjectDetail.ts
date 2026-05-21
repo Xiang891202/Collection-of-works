@@ -154,6 +154,7 @@ function openCaseStudy(slug: string) {
 
 function closeCaseStudy() {
   showCaseStudy.value = false;
+  currentMode.value = 'professional';
 }
 
 function cleanup() {

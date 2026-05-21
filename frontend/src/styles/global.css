@@ -38,3 +38,49 @@ button:hover { opacity: 0.85; }
   margin: 0 auto;
   padding: 0 var(--spacing-5);
 }
+
+/* 響應式圖片基礎 */
+.responsive-img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+
+ /* ========================= 
+// 圖片通用樣式
+========================= */
+.carousel-img {
+  width: 100%;
+  height: auto;
+  max-height: 400px;
+  object-fit: contain;
+  cursor: pointer;
+}
+
+/* 單張預覽圖 */
+.preview-img {
+  width: 100%;
+  height: auto;
+  max-height: 300px;
+  object-fit: contain;
+  border-radius: var(--radius);
+}
+
+/* 手機調整 */
+@media (max-width: 768px) {
+  .carousel-img { max-height: 250px; }
+  .preview-img { max-height: 200px; }
+}
+
+/* ========================= 
+// 文字通用樣式
+========================= */
+
+/* 文字工具類別 */
+.text-muted { color: var(--text-muted); }
+.text-accent { color: var(--accent); }
+.text-center { text-align: center; }
+
+/* 卡片文字 */
+.card-title { font-size: 1.2rem; margin-bottom: 0.5rem; }
+.card-description { font-size: 0.9rem; color: var(--text-muted); }

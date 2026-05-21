@@ -147,68 +147,67 @@ function openSingleImage(url: string) {
   max-width: 100%;
 }
 
+/* 單一圖片容器：不限制高度，由內容撐開 */
 .single-image-wrapper {
   width: 100%;
   background: var(--surface);
   border-radius: var(--radius);
   overflow: hidden;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
-.single-image-wrapper,
-.media-row .image img {
-  aspect-ratio: 16 / 9;
-  width: 100%;
-  object-fit: cover;
-  cursor: pointer;
-}
-
+/* 單一圖片：完整顯示，絕對不裁切 */
 .single-image {
   width: 100%;
-  height: 100%;
-  object-fit: cover;
+  height: auto;
+  max-height: 400px;
+  object-fit: contain;
   cursor: pointer;
 }
 
+/* 資料流／邊界圖片容器 */
+.media-row .image {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.media-row .image img {
+  width: 100%;
+  height: auto;
+  max-height: 300px;
+  object-fit: contain;
+  border-radius: var(--radius);
+  cursor: pointer;
+}
+
+/* 以下為原有樣式（無關圖片） */
 .tech-stack {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 16px;
 }
-
 .tech-stack div {
   background: var(--surface);
   padding: 16px;
   border-radius: var(--radius);
 }
-
 .problem-card, .decision-card {
   background: var(--surface);
   padding: 16px;
   border-radius: var(--radius);
   margin-bottom: 12px;
 }
-
 .media-row {
   display: flex;
   gap: 2rem;
   align-items: center;
 }
-
 .media-row .text {
   flex: 1;
 }
-
-.media-row .image {
-  flex: 1;
-}
-
-.media-row .image img {
-  width: 100%;
-  border-radius: var(--radius);
-  cursor: pointer;
-  object-fit: cover;
-}
-
 .action-btn {
   display: inline-block;
   margin-top: 20px;
@@ -219,12 +218,10 @@ function openSingleImage(url: string) {
   font-weight: bold;
   text-decoration: none;
 }
-
 .github-btn {
   background: #333;
   margin-right: 12px;
 }
-
 .case-study-btn {
   margin-top: 16px;
   padding: 10px 24px;
@@ -234,31 +231,32 @@ function openSingleImage(url: string) {
   border-radius: var(--radius);
   cursor: pointer;
 }
-
 .carousel-section {
   margin: 32px 0;
 }
 
+/* 手機版：只降低最大高度，不改變 object-fit */
 @media (max-width: 768px) {
   .media-row {
     flex-direction: column;
   }
-  
-  .single-image-wrapper,
-  .media-row .image img {
-    aspect-ratio: 4 / 3;
+  .single-image {
+    max-height: 250px;
   }
-  
+  .media-row .image img {
+    max-height: 200px;
+  }
   .tech-stack {
     grid-template-columns: 1fr;
     gap: 12px;
   }
 }
-
 @media (max-width: 480px) {
-  .single-image-wrapper,
+  .single-image {
+    max-height: 200px;
+  }
   .media-row .image img {
-    aspect-ratio: 1 / 1;
+    max-height: 180px;
   }
 }
 </style>

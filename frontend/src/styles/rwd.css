@@ -72,3 +72,23 @@
     height: 500px;
   }
 }
+
+/* 圖片容器 */
+.img-container {
+  width: 100%;
+  overflow: hidden;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* 手機優先：限制最大高度 */
+.img-container img {
+  max-height: 250px;
+}
+@media (min-width: 768px) {
+  .img-container img { max-height: 400px; }
+}
+@media (min-width: 1200px) {
+  .img-container img { max-height: 500px; }
+}

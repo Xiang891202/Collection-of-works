@@ -1,26 +1,27 @@
 <template>
   <div>
     <div v-if="isLoading" class="loading">載入中...</div>
-    
+
     <ShowcaseDetail
       v-else-if="currentMode === 'showcase' && showcaseData"
       :data="showcaseData"
       @open-lightbox="openImageViewer"
     />
-    
+
     <ProfessionalDetail
       v-else-if="currentMode === 'professional' && !showCaseStudy && professionalData"
       :data="professionalData"
       @open-image="openSingleImage"
-      @open-case-study="openCaseStudy(route.params.slug as string)"
+      @open-case-study="openCaseStudyFromProfessional"
     />
-    
+
     <CaseStudyDetail
       v-else-if="showCaseStudy && caseStudyData"
       :data="caseStudyData"
+      @close="closeCaseStudy"
       @open-diagrams="openImageViewer"
     />
-    
+
     <!-- 圖片檢視器 -->
     <ImageViewer
       v-if="viewerVisible"
@@ -53,6 +54,7 @@ const {
   isLoading,
   loadProject,
   openCaseStudy,
+  closeCaseStudy,
 } = useProjectDetail();
 
 const viewerVisible = ref(false);
@@ -67,7 +69,7 @@ function openImageViewer(images: string[], index: number, zoomEnabled = true, lo
   viewerStartIndex.value = index;
   viewerZoomEnabled.value = zoomEnabled;
   viewerLoop.value = loop;
-  viewerKey.value++;  // 強制重新建立元件
+  viewerKey.value++;
   viewerVisible.value = true;
 }
 
@@ -75,7 +77,26 @@ function openSingleImage(url: string) {
   openImageViewer([url], 0, true, false);
 }
 
+function openCaseStudyFromProfessional() {
+  const slug = route.params.slug as string;
+  if (slug) {
+    openCaseStudy(slug);
+  }
+}
+
 onMounted(() => {
-  loadProject(route.params.slug as string);
+  const slug = route.params.slug as string;
+  if (slug) {
+    loadProject(slug);
+  }
 });
 </script>
+
+<style scoped>
+.loading {
+  text-align: center;
+  padding: 60px;
+  font-size: 1.2rem;
+  color: var(--text-muted);
+}
+</style>

@@ -91,7 +91,7 @@ interface ProfessionalForm {
   dataFlow: string;
   boundary: string;
   coreProblems: Array<{ title: string; description: string }>;
-  designDecisions: Array<{ problem: string; solution: string; alternative: string }>;
+  designDecisions: Array<{ problem: string; rootCause: string; solution: string; alternative: string }>;
   evolutionDirection: string;
   evolutionImages: string[];
   caseStudyGuide: string;
@@ -124,6 +124,7 @@ const challengeFields = [
 ];
 const decisionFields = [
   { key: 'problem', label: '問題', type: 'text' },
+  { key: 'rootCause', label: '根因', type: 'textarea' },   // ✅ 新增
   { key: 'solution', label: '解法', type: 'textarea' },
   { key: 'alternative', label: '替代方案', type: 'textarea' },
 ];
@@ -236,5 +237,39 @@ onMounted(loadData);
 }
 .btn-primary:hover {
   opacity: 0.85;
+}
+
+.single-image-wrapper {
+  width: 100%;
+  background: var(--surface);
+  border-radius: var(--radius);
+  overflow: hidden;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.single-image {
+  width: 100%;
+  height: auto;
+  max-height: 400px;        /* 限制最大高度，避免過大 */
+  object-fit: contain;      /* 保持比例，不裁切 */
+  cursor: pointer;
+}
+.media-row .image img {
+  width: 100%;
+  height: auto;
+  max-height: 300px;
+  object-fit: contain;
+  border-radius: var(--radius);
+  cursor: pointer;
+}
+/* 手機板調整 */
+@media (max-width: 768px) {
+  .single-image {
+    max-height: 250px;
+  }
+  .media-row .image img {
+    max-height: 200px;
+  }
 }
 </style>

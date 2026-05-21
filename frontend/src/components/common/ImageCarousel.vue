@@ -125,14 +125,20 @@ function onLightboxClose() {
   background: var(--surface);
   border-radius: var(--radius);
   overflow: hidden;
-}
-
-/* 🔧 關鍵修復：使用 min-height 而不是固定 aspect-ratio */
-.carousel-main {
-  min-height: 200px;
   display: flex;
   align-items: center;
   justify-content: center;
+  min-height: 200px;
+}
+
+/* 🔧 關鍵修復：使用 min-height 而不是固定 aspect-ratio */
+.carousel-image {
+  width: 100%;
+  height: auto;
+  max-height: 400px;
+  object-fit: contain;   /* 保持完整比例 */
+  cursor: pointer;
+  transition: transform 0.2s;
 }
 
 /* 🔧 圖片使用 contain，保持完整比例，不裁剪不變形 */
