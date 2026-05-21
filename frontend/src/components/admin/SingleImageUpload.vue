@@ -71,12 +71,16 @@ async function handleUpload(e: Event) {
   }
 }
 
-function removeImage() {
-  if (imageUrl.value && props.projectId) {
-    deleteImage(props.projectId, imageUrl.value).catch(console.error);
+async function removeImage() {
+  if (!imageUrl.value || !props.projectId) return;
+  try {
+    await deleteImage(props.projectId, imageUrl.value);
+    imageUrl.value = '';
+    emit('update:modelValue', '');
+  } catch (err) {
+    console.error('刪除圖片失敗', err);
+    alert('刪除失敗，請重試');
   }
-  imageUrl.value = '';
-  emit('update:modelValue', '');
 }
 </script>
 
