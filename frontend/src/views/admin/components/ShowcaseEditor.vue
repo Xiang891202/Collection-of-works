@@ -27,9 +27,16 @@
         <DynamicListInput :key="componentKey" v-model="form.extendedApplications" />
       </div>
 
+      <!-- 🖼 展示圖片：串接前端暫存狀態與雙向綁定 -->
       <div class="form-group">
         <label>展示圖片</label>
-        <ImageManager v-model="form.images" :projectId="projectId" />
+        <ImageManager 
+          :key="`images_${componentKey}`" 
+          v-model="form.images" 
+          v-model:newFiles="managerNewFiles"
+          v-model:deletedUrls="managerDeletedUrls"
+          :projectId="projectId" 
+        />
       </div>
 
       <div class="form-group">
@@ -46,7 +53,8 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
-import { fetchAdminProject, updateShowcaseContent } from '../../../api/index.api';
+// 💡 補上 uploadImage 和 deleteImage 的 API 引入
+import { fetchAdminProject, updateShowcaseContent, uploadImage, deleteImage } from '../../../api/index.api';
 import DynamicListInput from '../../../components/admin/DynamicListInput.vue';
 import ImageManager from '../../../components/admin/ImageManager.vue';
 import LinkListInput from '../../../components/admin/LinkListInput.vue';
@@ -65,6 +73,11 @@ interface ShowcaseForm {
 const props = defineProps<{ projectId: string; disabled?: boolean }>();
 
 const componentKey = ref(0);
+
+// ─── 1. 宣告圖片上傳與刪除的狀態暫存區 ───
+const managerNewFiles = ref<{ file: File; localUrl: string }[]>([]);
+const managerDeletedUrls = ref<string[]>([]);
+
 const form = ref<ShowcaseForm>({
   systemDefinition: '',
   problem: '',
@@ -88,23 +101,60 @@ async function loadData() {
       images: Array.isArray(showcase.images) ? showcase.images : [],
       demoUrl: Array.isArray(showcase.demoUrl) ? showcase.demoUrl : [],
     };
+    
+    // ─── 2. 重新加載資料時，一併清空舊的圖片暫存區並釋放記憶體 ───
+    managerDeletedUrls.value = [];
+    managerNewFiles.value.forEach(item => URL.revokeObjectURL(item.localUrl));
+    managerNewFiles.value = [];
+
     componentKey.value++;
   }
 }
 
+// ─── 3. 修改後的 save 函式：將圖片批次操作與表單儲存完美打包 ───
 async function save() {
-  const payload = {
-    systemDefinition: form.value.systemDefinition,
-    problem: form.value.problem,
-    solution: form.value.solution,
-    impact: form.value.impact,
-    extendedApplications: form.value.extendedApplications,
-    images: form.value.images,
-    demoUrl: form.value.demoUrl.length ? form.value.demoUrl : null,
-  };
-  await updateShowcaseContent(props.projectId, payload);
-  alert('展示版已儲存');
-  await loadData();
+  if (!props.projectId) return;
+
+  try {
+    // A. 處理圖片刪除 API
+    for (const url of managerDeletedUrls.value) {
+      await deleteImage(props.projectId, url);
+    }
+
+    // B. 處理新圖片上傳 API
+    const uploadedUrls: string[] = [];
+    for (const item of managerNewFiles.value) {
+      const res = await uploadImage(props.projectId, item.file);
+      uploadedUrls.push(res.data.data!.url);
+    }
+
+    // C. 計算變更後留下來的最終展示圖片網址陣列
+    const finalShowcaseImages = [
+      ...form.value.images.filter(url => !managerDeletedUrls.value.includes(url)),
+      ...uploadedUrls
+    ];
+
+    // D. 包裝最終要送出給後端的 Payload
+    const payload = {
+      systemDefinition: form.value.systemDefinition,
+      problem: form.value.problem,
+      solution: form.value.solution,
+      impact: form.value.impact,
+      extendedApplications: form.value.extendedApplications,
+      images: finalShowcaseImages, // 帶入計算好的最新網址陣列
+      demoUrl: form.value.demoUrl.length ? form.value.demoUrl : null,
+    };
+
+    // E. 觸發展示版內容儲存 API
+    await updateShowcaseContent(props.projectId, payload);
+    alert('展示版已儲存');
+    
+    // F. 重新拉取資料，刷新前端畫面
+    await loadData();
+  } catch (err) {
+    console.error('儲存展示版內容失敗', err);
+    alert('儲存失敗，請重試。');
+  }
 }
 
 onMounted(loadData);

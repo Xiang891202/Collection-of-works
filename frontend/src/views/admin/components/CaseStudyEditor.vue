@@ -109,8 +109,15 @@
       <!-- 架構圖（輪播多圖） -->
       <div class="form-group">
         <label>🖼 架構圖（輪播）</label>
-        <ImageManager :key="`diagramImages_${componentKey}`" v-model="diagramImages" :projectId="projectId" />
+        <ImageManager 
+          :key="`diagramImages_${componentKey}`" 
+          v-model="diagramImages" 
+          v-model:newFiles="managerNewFiles"
+          v-model:deletedUrls="managerDeletedUrls"
+          :projectId="projectId" 
+        />
       </div>
+
 
       <!-- 補充記錄區域 -->
       <div class="form-group">
@@ -132,7 +139,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
-import { fetchAdminProject, updateCaseStudyContent } from '../../../api/index.api';
+import { fetchAdminProject, uploadImage, deleteImage, updateCaseStudyContent } from '../../../api/index.api';
 import DynamicListInput from '../../../components/admin/DynamicListInput.vue';
 import ObjectListInput from '../../../components/admin/ObjectListInput.vue';
 import ImageManager from '../../../components/admin/ImageManager.vue';
@@ -193,6 +200,8 @@ const props = defineProps<{ projectId: string; disabled?: boolean }>();
 
 const componentKey = ref(0);
 const diagramImages = ref<string[]>([]);
+const managerNewFiles = ref<{ file: File; localUrl: string }[]>([]);
+const managerDeletedUrls = ref<string[]>([]);
 
 const form = ref<CaseStudyForm>({
   initialAssumption: { architecture: '', dataFlow: '', limitations: '' },
@@ -264,19 +273,55 @@ async function loadData() {
 }
 
 async function save() {
-  const diagramsPayload = diagramImages.value.map((url, idx) => ({
-    type: `架構圖 ${idx + 1}`,
-    url,
-  }));
+  if (!props.projectId) return;
 
-  const payload = {
-    ...form.value,
-    diagrams: diagramsPayload,
-  };
+  try {
+    // 顯示 Loading 或提示（非必要，視需求加）
+    console.log('開始同步圖片與表單資料庫...');
 
-  await updateCaseStudyContent(props.projectId, payload);
-  alert('工程紀錄已儲存');
-  await loadData();
+    // ─── A. 先處理圖片刪除 API ───
+    for (const url of managerDeletedUrls.value) {
+      await deleteImage(props.projectId, url);
+    }
+
+    // ─── B. 再處理新圖片上傳 API ───
+    const uploadedUrls: string[] = [];
+    for (const item of managerNewFiles.value) {
+      const res = await uploadImage(props.projectId, item.file);
+      uploadedUrls.push(res.data.data!.url);
+    }
+
+    // ─── C. 計算出該儲存到後端 caseStudy.diagrams 的最終網址陣列 ───
+    const finalDiagramUrls = [
+      ...diagramImages.value.filter(url => !managerDeletedUrls.value.includes(url)),
+      ...uploadedUrls
+    ];
+
+    // ─── D. 包裝最終要送給 updateCaseStudyContent 的資料物件 ───
+    // 注意：因爲此處沒有你完整的 save 舊代碼，請依據你後端接收的格式調整
+    const submitPayload = {
+      ...form.value,
+      // 依你的後端資料結構，將最終網址陣列對應塞回 caseStudy 內
+      diagrams: finalDiagramUrls.map(url => ({ url })) 
+    };
+
+    // ─── E. 觸發父組件原本的儲存 API ───
+    await updateCaseStudyContent(props.projectId, submitPayload);
+
+    // ─── F. 儲存成功，重置所有暫存狀態 ───
+    diagramImages.value = finalDiagramUrls;
+    managerDeletedUrls.value = [];
+    managerNewFiles.value.forEach(item => URL.revokeObjectURL(item.localUrl));
+    managerNewFiles.value = [];
+
+    // 刷新組件 key 重新載入最新狀態
+    componentKey.value++; 
+    
+    alert('工程紀錄與圖片已全部儲存成功！');
+  } catch (err) {
+    console.error('儲存完整工程紀錄失敗', err);
+    alert('儲存失敗，請檢查網路或防呆。');
+  }
 }
 
 onMounted(loadData);

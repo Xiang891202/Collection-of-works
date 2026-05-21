@@ -55,9 +55,16 @@
         <textarea v-model="form.evolutionDirection" rows="3" class="form-control" :disabled="disabled"></textarea>
       </div>
 
+      <!-- 🖼 演進方向配圖：整合雙向綁定的暫存狀態 -->
       <div class="form-group">
         <label>🖼 演進方向配圖</label>
-        <ImageManager :key="`images_${componentKey}`" v-model="form.evolutionImages" :projectId="projectId" />
+        <ImageManager 
+          :key="`images_${componentKey}`" 
+          v-model="form.evolutionImages" 
+          v-model:newFiles="managerNewFiles"
+          v-model:deletedUrls="managerDeletedUrls"
+          :projectId="projectId" 
+        />
       </div>
 
       <div class="form-group">
@@ -79,7 +86,8 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
-import { fetchAdminProject, updateProfessionalContent } from '../../../api/index.api';
+// 💡 補上 uploadImage 和 deleteImage 的 API 引入
+import { fetchAdminProject, updateProfessionalContent, uploadImage, deleteImage } from '../../../api/index.api';
 import SingleImageUpload from '../../../components/admin/SingleImageUpload.vue';
 import ImageManager from '../../../components/admin/ImageManager.vue';
 import ObjectListInput from '../../../components/admin/ObjectListInput.vue';
@@ -103,6 +111,11 @@ interface ProfessionalForm {
 const props = defineProps<{ projectId: string; disabled?: boolean }>();
 
 const componentKey = ref(0);
+
+// ─── 1. 宣告圖片上傳與刪除的暫存狀態 ───
+const managerNewFiles = ref<{ file: File; localUrl: string }[]>([]);
+const managerDeletedUrls = ref<string[]>([]);
+
 const form = ref<ProfessionalForm>({
   systemGoal: '',
   architectureDiagram: '',
@@ -124,7 +137,7 @@ const challengeFields = [
 ];
 const decisionFields = [
   { key: 'problem', label: '問題', type: 'text' },
-  { key: 'rootCause', label: '根因', type: 'textarea' },   // ✅ 新增
+  { key: 'rootCause', label: '根因', type: 'textarea' },
   { key: 'solution', label: '解法', type: 'textarea' },
   { key: 'alternative', label: '替代方案', type: 'textarea' },
 ];
@@ -147,46 +160,83 @@ async function loadData() {
       dataFlowImage: prof.dataFlowImage || '',
       boundaryImage: prof.boundaryImage || '',
     };
+    // ─── 2. 重新加載資料時，一併清空舊的圖片暫存 ───
+    managerDeletedUrls.value = [];
+    managerNewFiles.value.forEach(item => URL.revokeObjectURL(item.localUrl));
+    managerNewFiles.value = [];
+    
     componentKey.value++;
   }
 }
 
+// ─── 3. 修改後的 save 函式：將圖片 API 與表單儲存完美結合 ───
 async function save() {
-  const payload = {
-    systemGoal: form.value.systemGoal,
-    architectureDiagram: form.value.architectureDiagram,
-    dataFlow: form.value.dataFlow,
-    githubUrl: form.value.githubUrl,
-    coreProblems: form.value.coreProblems,
-    designDecisions: form.value.designDecisions,
-    boundary: form.value.boundary,
-    evolutionDirection: form.value.evolutionDirection,
-    caseStudyGuide: form.value.caseStudyGuide,
-    images: form.value.evolutionImages,
-    techStack: { frontend: [], backend: [], storage: [] },
-    keyProcesses: [],
-    tradeOffs: [],
-    impactAnalysis: {
-      scalability: '',
-      maintainability: '',
-      reliability: '',
-      consistency: '',
-      performance: ''
-    },
-    futureEvolution: [],
-    interviewQuestions: [],
-    dataFlowImage: form.value.dataFlowImage || '',
-    boundaryImage: form.value.boundaryImage || '',
-  };
-  await updateProfessionalContent(props.projectId, payload);
-  alert('專業版已儲存');
-  await loadData();
+  if (!props.projectId) return;
+
+  try {
+    // A. 先處理圖片刪除 API
+    for (const url of managerDeletedUrls.value) {
+      await deleteImage(props.projectId, url);
+    }
+
+    // B. 再處理新圖片上傳 API
+    const uploadedUrls: string[] = [];
+    for (const item of managerNewFiles.value) {
+      const res = await uploadImage(props.projectId, item.file);
+      uploadedUrls.push(res.data.data!.url);
+    }
+
+    // C. 計算最終留下來的圖片網址陣列 (要存進後端 payload.images 的)
+    const finalEvolutionImages = [
+      ...form.value.evolutionImages.filter(url => !managerDeletedUrls.value.includes(url)),
+      ...uploadedUrls
+    ];
+
+    // D. 包裝並整理與舊結構一致的 Payload
+    const payload = {
+      systemGoal: form.value.systemGoal,
+      architectureDiagram: form.value.architectureDiagram,
+      dataFlow: form.value.dataFlow,
+      githubUrl: form.value.githubUrl,
+      coreProblems: form.value.coreProblems,
+      designDecisions: form.value.designDecisions,
+      boundary: form.value.boundary,
+      evolutionDirection: form.value.evolutionDirection,
+      caseStudyGuide: form.value.caseStudyGuide,
+      images: finalEvolutionImages, // 使用我們計算好的最新網址陣列
+      techStack: { frontend: [], backend: [], storage: [] },
+      keyProcesses: [],
+      tradeOffs: [],
+      impactAnalysis: {
+        scalability: '',
+        maintainability: '',
+        reliability: '',
+        consistency: '',
+        performance: ''
+      },
+      futureEvolution: [],
+      interviewQuestions: [],
+      dataFlowImage: form.value.dataFlowImage || '',
+      boundaryImage: form.value.boundaryImage || '',
+    };
+
+    // E. 觸發原本的專業版內容儲存 API
+    await updateProfessionalContent(props.projectId, payload);
+    alert('專業版已儲存');
+    
+    // F. 重新拉取資料，載入防快取後的全新乾淨狀態
+    await loadData();
+  } catch (err) {
+    console.error('儲存專業版內容失敗', err);
+    alert('儲存失敗，請重試。');
+  }
 }
 
 onMounted(loadData);
 </script>
 
 <style scoped>
+/* 原有樣式完全保留 ... */
 .professional-editor {
   max-width: 1000px;
   margin: 0 auto;
@@ -238,7 +288,6 @@ onMounted(loadData);
 .btn-primary:hover {
   opacity: 0.85;
 }
-
 .single-image-wrapper {
   width: 100%;
   background: var(--surface);
@@ -251,8 +300,8 @@ onMounted(loadData);
 .single-image {
   width: 100%;
   height: auto;
-  max-height: 400px;        /* 限制最大高度，避免過大 */
-  object-fit: contain;      /* 保持比例，不裁切 */
+  max-height: 400px;
+  object-fit: contain;
   cursor: pointer;
 }
 .media-row .image img {
@@ -263,7 +312,6 @@ onMounted(loadData);
   border-radius: var(--radius);
   cursor: pointer;
 }
-/* 手機板調整 */
 @media (max-width: 768px) {
   .single-image {
     max-height: 250px;

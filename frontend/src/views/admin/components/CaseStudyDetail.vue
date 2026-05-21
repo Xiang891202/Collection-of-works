@@ -88,7 +88,7 @@
     </section>
 
     <section v-if="diagrams.length" class="carousel-section">
-      <h2>🖼 架構圖</h2>
+      <h2>🖼 設計文件</h2>
       <ImageCarousel :images="diagrams" />
     </section>
 
