@@ -1,8 +1,27 @@
 <template>
   <div>
     <h1>專案列表</h1>
-    <div v-if="isLoading" class="loading">載入中...</div>
-    <div v-else-if="error">錯誤: {{ error }}</div>
+    
+    <!-- 后端冷启动重试中 -->
+    <div v-if="isRetrying" class="cold-start-message">
+      <p>🚀 後端啟動中…</p>
+      <p>{{ countdown }} 秒後自動重新載入</p>
+      <p class="retry-hint">已嘗試 {{ retryCount }} / {{ maxRetry }}</p>
+      <button @click="manualRetry" class="retry-btn">立即重試</button>
+    </div>
+    
+    <!-- 一般載入中 -->
+    <div v-else-if="isLoading" class="loading">
+      載入中...
+    </div>
+    
+    <!-- 错误信息 -->
+    <div v-else-if="error" class="error">
+      <p>{{ error }}</p>
+      <button @click="manualRetry" class="retry-btn">重新載入</button>
+    </div>
+    
+    <!-- 正常列表 -->
     <div v-else class="grid">
       <router-link
         v-for="p in projects"
@@ -23,11 +42,18 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted } from 'vue';
+import { onMounted, onUnmounted } from 'vue';
 import { useProjectList } from '../composables/useProjectList';
 
-const { projects, isLoading, error, load } = useProjectList();
-onMounted(() => load());
+const { projects, isLoading, isRetrying, countdown, retryCount, maxRetry, error, load, manualRetry, cleanup } = useProjectList();
+
+onMounted(() => {
+  load();
+});
+
+onUnmounted(() => {
+  cleanup();
+});
 </script>
 
 <style scoped>
@@ -85,5 +111,33 @@ p {
 .loading {
   text-align: center;
   padding: 60px;
+}
+
+.cold-start-message {
+  text-align: center;
+  padding: 60px 20px;
+  background: var(--surface);
+  border-radius: var(--radius);
+  max-width: 400px;
+  margin: 40px auto;
+}
+.retry-hint {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  margin-top: 8px;
+}
+.retry-btn {
+  margin-top: 16px;
+  background: var(--accent);
+  color: white;
+  border: none;
+  padding: 8px 20px;
+  border-radius: 20px;
+  cursor: pointer;
+}
+.error {
+  text-align: center;
+  padding: 60px 20px;
+  color: #f66;
 }
 </style>
