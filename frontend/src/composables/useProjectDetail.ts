@@ -1,4 +1,5 @@
 // composables/useProjectDetail.ts
+import { computed } from 'vue';
 import { useProjectState } from './useProjectState';
 import { useProjectCache } from './useProjectCache';
 import { useProjectRequest } from './useProjectRequest';
@@ -137,11 +138,11 @@ export function useProjectDetail() {
   };
 
   // 提供给模板的错误信息（优先显示重试过程的错误，再显示 404）
-  const detailError = () => {
+  const detailError = computed(() => {
     if (projectNotFound) return notFoundMessage;
     if (retry.errorMessage.value) return retry.errorMessage.value;
     return null;
-  };
+  });
 
   return {
     // 状态
