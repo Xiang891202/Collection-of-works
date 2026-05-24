@@ -1,6 +1,6 @@
 <template>
-  <div>
-    <!-- 后端冷启动重试中 -->
+  <div class="project-detail-container">
+    <!-- 后端冷启动重试中 (維持最高優先，因為這算全頁錯誤) -->
     <div v-if="isRetrying" class="cold-start-message">
       <p>🚀 後端啟動中…</p>
       <p>{{ countdown }} 秒後自動重新載入</p>
@@ -14,29 +14,36 @@
       <button @click="() => router.push('/projects')" class="retry-btn">返回專案列表</button>
     </div>
 
-    <!-- 一般載入中 -->
-    <div v-else-if="isLoading" class="loading">載入中...</div>
+    <!-- 正常内容 (注意：這裡改用 v-else 配合裡面的 v-if) -->
+    <div v-else class="content-wrapper">
+      
+      <!-- 🔥 一般載入中：改成獨立遮罩，不破壞下方組件的生命週期 -->
+      <div v-if="isLoading" class="loading-overlay">載入中...</div>
 
-    <!-- 正常内容 -->
-    <ShowcaseDetail
-      v-else-if="currentMode === 'showcase' && showcaseData"
-      :data="showcaseData"
-      @open-lightbox="openImageViewer"
-    />
-    
-    <ProfessionalDetail
-      v-else-if="currentMode === 'professional' && !showCaseStudy && professionalData"
-      :data="professionalData"
-      @open-image="openSingleImage"
-      @open-case-study="openCaseStudy(route.params.slug as string)"
-    />
-    
-    <CaseStudyDetail
-      v-else-if="showCaseStudy && caseStudyData"
-      :data="caseStudyData"
-      @close="closeCaseStudy"
-      @open-diagrams="openImageViewer"
-    />
+      <!-- 2. 傳遞自訂事件給子組件 -->
+      <ShowcaseDetail
+        v-if="currentMode === 'showcase' && showcaseData"
+        :data="showcaseData"
+        @open-lightbox="openImageViewer"
+        @switch-mode="switchMode" 
+      />
+
+      <ProfessionalDetail
+        v-else-if="currentMode === 'professional' && !showCaseStudy && professionalData"
+        :data="professionalData"
+        @open-image="openSingleImage"
+        @open-case-study="openCaseStudy(route.params.slug as string)"
+        @switch-mode="switchMode" 
+      />
+
+      
+      <CaseStudyDetail
+        v-else-if="showCaseStudy && caseStudyData"
+        :data="caseStudyData"
+        @close="closeCaseStudy"
+        @open-diagrams="openImageViewer"
+      />
+    </div>
     
     <ImageViewer
       v-if="viewerVisible"
@@ -50,29 +57,30 @@
   </div>
 </template>
 
+
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from 'vue';
+import { ref, watch, onUnmounted } from 'vue'; // 🔥 導入 watch，移除已不需要的 onMounted
 import { useRoute, useRouter } from 'vue-router';
 import { useProjectDetail } from '../composables/useProjectDetail';
 import ShowcaseDetail from './admin/components/ShowcaseDetail.vue';
 import ProfessionalDetail from './admin/components/ProfessionalDetail.vue';
 import CaseStudyDetail from './admin/components/CaseStudyDetail.vue';
 import ImageViewer from '../components/common/ImageViewer.vue';
+import { currentMode } from '../composables/globalState';
 
 const route = useRoute();
 const router = useRouter();
 const {
-  currentMode,
   showcaseData,
   professionalData,
   caseStudyData,
   showCaseStudy,
   isLoading,
-  isRetrying,        // 新增
-  countdown,         // 新增
-  retryCount,        // 新增
-  maxRetry,          // 新增
-  detailError,       // 新增
+  isRetrying,        
+  countdown,         
+  retryCount,        
+  maxRetry,          
+  detailError,       
   loadProject,
   openCaseStudy,
   closeCaseStudy,
@@ -80,6 +88,34 @@ const {
   cleanup,
 } = useProjectDetail();
 
+// 🔥 核心修正：實作真正的 URL 控制流
+// 只要接管了 URL 變化，就不需要呼叫 switchMode 函數了
+const switchMode = (mode: 'showcase' | 'professional') => {
+  router.push({
+    query: { ...route.query, mode: mode } // 點擊按鈕時，唯一做的事情就是改變網址的 query
+  });
+};
+
+// 🔥 核心關鍵：利用 watch 達成單一事實來源 (Source of Truth)
+watch(
+  () => [route.params.slug, route.query.mode], // 同時監聽專案與模式的網址變化
+  ([newSlug, newMode]) => {
+    if (!newSlug) return;
+
+    // 1. 同步 URL 狀態到全域響應式變數中，驅動畫面結構
+    if (newMode === 'professional') {
+      currentMode.value = 'professional';
+    } else {
+      currentMode.value = 'showcase'; // 預設或 showcase
+    }
+
+    // 2. 網址變更後，觸發獲取對應模式的後端資料
+    loadProject(newSlug as string);
+  },
+  { immediate: true } // 🔥 取代 onMounted！初始化與網址重整時會立刻執行第一次
+);
+
+// --- 燈箱與圖片檢視邏輯保持不變 ---
 const viewerVisible = ref(false);
 const viewerImages = ref<{ src: string }[]>([]);
 const viewerStartIndex = ref(0);
@@ -100,33 +136,40 @@ function openSingleImage(url: string) {
   openImageViewer([url], 0, true, false);
 }
 
-// function openCaseStudyFromProfessional() {
-//   const slug = route.params.slug as string;
-//   if (slug) {
-//     openCaseStudy(slug);
-//   }
-// }
-
-onMounted(() => {
-  const slug = route.params.slug as string;
-  if (slug) {
-    loadProject(slug);
-  }
-});
-
 onUnmounted(() => {
   cleanup();
 });
 </script>
 
+
 <style scoped>
-.loading {
-  text-align: center;
-  padding: 60px;
-  font-size: 1.2rem;
-  color: var(--text-muted);
+/* 容器加上相對定位 */
+.project-detail-container {
+  position: relative;
+  min-height: 400px;
 }
 
+.content-wrapper {
+  position: relative;
+}
+
+/* 🔥 新增：絕對定位的載入遮罩 */
+.loading-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(255, 255, 255, 0.7); /* 半透明白底，可依據深色模式調整 */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 1.2rem;
+  color: var(--text-muted);
+  z-index: 10; /* 確保蓋在內容上方 */
+}
+
+/* 原有的樣式保留 */
 .cold-start-message {
   text-align: center;
   padding: 60px 20px;
@@ -154,4 +197,5 @@ onUnmounted(() => {
   padding: 60px 20px;
   color: #f66;
 }
+
 </style>

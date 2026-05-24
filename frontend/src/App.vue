@@ -20,13 +20,13 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import { currentMode } from './composables/useProjectDetail';
+import { currentMode } from './composables/globalState';  // ✅ 正確來源
 import { useProjectDetail } from './composables/useProjectDetail';
-const { loadProject } = useProjectDetail();
 
 const route = useRoute();
 const router = useRouter();
 const viewKey = ref(0);
+const { loadProject } = useProjectDetail();
 
 function toggleMode() {
   const newMode = currentMode.value === 'showcase' ? 'professional' : 'showcase';
@@ -37,7 +37,7 @@ function toggleMode() {
       path: `/projects/${slug}`,
       query: { mode: newMode }
     });
-    loadProject(slug);  // 強制重新載入對應模式的資料
+    loadProject(slug);
   }
   window.scrollTo(0, 0);
 }

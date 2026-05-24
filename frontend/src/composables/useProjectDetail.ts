@@ -10,11 +10,15 @@ import { currentMode } from './globalState';
 
 export { currentMode };
 
+// 🔥 關鍵修正：移到函數外部！建立全域單例防抖
+// 這樣不論 useProjectDetail 被呼叫幾次，或是組件怎麼重繪，timer 都不會遺失
+const debouncer = useProjectDebounce(300);
+
 export function useProjectDetail() {
   const state = useProjectState();
   const cache = useProjectCache();
   const request = useProjectRequest();
-  const debouncer = useProjectDebounce(300);
+  // const debouncer = useProjectDebounce(300);
   const retry = useBackendRetry({ maxRetries: 3, retryDelay: 10 });
 
   // 404 状态（专案不存在）
@@ -127,10 +131,19 @@ export function useProjectDetail() {
   };
 
   const switchMode = (mode: 'showcase' | 'professional', slug: string) => {
+    console.log('1. [switchMode 被點擊]', mode, slug);
+    
     state.currentMode.value = mode;
     state.showCaseStudy.value = false;
-    debouncer.debounce(() => loadProject(slug));
+    
+    console.log('2. [狀態已改變]', state.currentMode.value);
+
+    debouncer.debounce(() => {
+      console.log('3. 🔥 [防抖結束，開始執行 loadProject]');
+      loadProject(slug);
+    });
   };
+
 
   const forceReload = (slug: string) => {
     retry.reset();
