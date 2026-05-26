@@ -182,10 +182,12 @@ function onLightboxClose() {
 
 .carousel-nav.prev {
   left: 12px;
+  background: rgba(0, 0, 0, 0.8);
 }
 
 .carousel-nav.next {
   right: 12px;
+  background: rgba(0, 0, 0, 0.8);
 }
 
 /* 指示點 */
@@ -221,6 +223,16 @@ function onLightboxClose() {
     width: 32px;
     height: 32px;
     font-size: 18px;
+  }
+
+  .carousel-nav.prev {
+    left: 12px;
+    background: rgba(0, 0, 0, 0.8);
+  }
+
+  .carousel-nav.next {
+    right: 12px;
+    background: rgba(0, 0, 0, 0.8);
   }
 }
 

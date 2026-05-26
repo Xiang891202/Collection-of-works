@@ -213,10 +213,12 @@ defineExpose({ open, close });
 
 .lightbox-nav.prev {
   left: 20px;
+  background: rgba(0, 0, 0, 0.8);
 }
 
 .lightbox-nav.next {
   right: 20px;
+  background: rgba(0, 0, 0, 0.8);
 }
 
 .lightbox-counter {

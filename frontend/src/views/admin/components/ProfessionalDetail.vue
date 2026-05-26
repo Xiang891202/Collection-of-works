@@ -40,7 +40,7 @@
     
     <!-- 邊界 -->
     <section v-if="data.boundary || data.boundaryImage">
-      <h2>🔲 邊界</h2>
+      <h2>🔲Service 邊界</h2>
       <div class="media-row">
         <div v-if="data.boundary" class="text" v-html="formatText(data.boundary)"></div>
         <div v-if="data.boundaryImage" class="image">
