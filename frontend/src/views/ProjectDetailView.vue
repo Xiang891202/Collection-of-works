@@ -62,9 +62,9 @@
 import { ref, watch, onUnmounted } from 'vue'; // 🔥 導入 watch，移除已不需要的 onMounted
 import { useRoute, useRouter } from 'vue-router';
 import { useProjectDetail } from '../composables/useProjectDetail';
-import ShowcaseDetail from './admin/components/ShowcaseDetail.vue';
-import ProfessionalDetail from './admin/components/ProfessionalDetail.vue';
-import CaseStudyDetail from './admin/components/CaseStudyDetail.vue';
+import ShowcaseDetail from '../views/project-detail/ShowcaseDetail.vue';
+import ProfessionalDetail from '../views/project-detail/ProfessionalDetail.vue';
+import CaseStudyDetail from '../views/project-detail/CaseStudyDetail.vue';
 import ImageViewer from '../components/common/ImageViewer.vue';
 import { currentMode } from '../composables/globalState';
 
@@ -98,22 +98,19 @@ const switchMode = (mode: 'showcase' | 'professional') => {
 
 // 🔥 核心關鍵：利用 watch 達成單一事實來源 (Source of Truth)
 watch(
-  () => [route.params.slug, route.query.mode], // 同時監聽專案與模式的網址變化
+  () => [route.params.slug, route.query.mode],
   ([newSlug, newMode]) => {
     if (!newSlug) return;
 
-    // 1. 同步 URL 狀態到全域響應式變數中，驅動畫面結構
-    if (newMode === 'professional') {
-      currentMode.value = 'professional';
-    } else {
-      currentMode.value = 'showcase'; // 預設或 showcase
-    }
+    const targetMode = newMode === 'professional' ? 'professional' : 'showcase';
+    currentMode.value = targetMode;
 
-    // 2. 網址變更後，觸發獲取對應模式的後端資料
-    loadProject(newSlug as string);
+    // 🔥 關鍵修正：將明確的模式傳入 loadProject，徹底斬斷因快取或插件干擾導致的空白
+    loadProject(newSlug as string, false, targetMode);
   },
-  { immediate: true } // 🔥 取代 onMounted！初始化與網址重整時會立刻執行第一次
+  { immediate: true }
 );
+
 
 // --- 燈箱與圖片檢視邏輯保持不變 ---
 const viewerVisible = ref(false);

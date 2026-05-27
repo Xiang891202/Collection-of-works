@@ -112,10 +112,10 @@
 
 <script setup lang="ts">
 import { ref, computed } from 'vue';
-import type { ProfessionalDTO } from '../../../types/dto';
-import { formatText } from '../../../utils/textFormatter';
-import ImageCarousel from '../../../components/common/ImageCarousel.vue';
-import LightboxModal from '../../../components/common/LightboxModal.vue';
+import type { ProfessionalDTO } from '../../types/dto.ts';
+import { formatText } from '../../utils/textFormatter.ts';
+import ImageCarousel from '../../components/common/ImageCarousel.vue';
+import LightboxModal from '../../components/common/LightboxModal.vue';
 
 const props = defineProps<{ data: ProfessionalDTO }>();
 

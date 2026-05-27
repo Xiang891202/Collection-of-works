@@ -10,22 +10,18 @@ import { currentMode } from './globalState';
 
 export { currentMode };
 
-// 🔥 關鍵修正：移到函數外部！建立全域單例防抖
-// 這樣不論 useProjectDetail 被呼叫幾次，或是組件怎麼重繪，timer 都不會遺失
 const debouncer = useProjectDebounce(300);
 
 export function useProjectDetail() {
   const state = useProjectState();
   const cache = useProjectCache();
   const request = useProjectRequest();
-  // const debouncer = useProjectDebounce(300);
   const retry = useBackendRetry({ maxRetries: 3, retryDelay: 10 });
 
-  // 404 状态（专案不存在）
   let projectNotFound = false;
   let notFoundMessage = '';
 
-  // 核心请求函数，返回 { success, errorType }
+  // 🔥 修正一：顯式傳入 mode，不依賴外部全域狀態，避免非同步時間差
   const performFetch = async (
     slug: string,
     mode: 'showcase' | 'professional'
@@ -33,44 +29,50 @@ export function useProjectDetail() {
     const fetchFn = mode === 'showcase' ? request.fetchShowcaseData : request.fetchProfessionalData;
     try {
       const data = await fetchFn(slug);
+      
       if (mode === 'showcase') {
         state.showcaseData.value = data as ShowcaseDTO;
       } else {
         state.professionalData.value = data as ProfessionalDTO;
       }
+      
       cache.setCache(slug, mode, data);
       projectNotFound = false;
       return { success: true };
     } catch (err: any) {
-      // 处理 404 专案不存在
+      console.error('⚠️ [performFetch 捕捉到錯誤，進行安全降級處理]:', err.message);
+      
       if (err.response?.status === 404) {
         projectNotFound = true;
         notFoundMessage = '資料遺失… 該專案可能已被管理員下架或不存在。';
         return { success: false, errorType: 'api' };
       }
-      // 判断是否为冷启动（网络错误、连接拒绝、503）
+      
       const isColdStart =
         err.message?.includes('Network Error') ||
         err.code === 'ECONNABORTED' ||
         err.response?.status === 503;
+        
       if (isColdStart) {
         return { success: false, errorType: 'cold' };
       }
-      // 其他错误（如 500、格式错误等）
+      
       return { success: false, errorType: 'api' };
     }
   };
 
-  const loadProject = async (slug: string, forceRefresh = false) => {
+  // 🔥 修正二：允許傳入明確的 targetMode，解決 watch 重整時的死鎖問題
+  const loadProject = async (slug: string, forceRefresh = false, targetMode?: 'showcase' | 'professional') => {
     if (state.isLoading.value || retry.isRetrying.value) return;
 
     state.isLoading.value = true;
     state.showCaseStudy.value = false;
     projectNotFound = false;
 
-    const mode = state.currentMode.value;
+    // 如果有傳入 targetMode 就用它，否則才看全域狀態
+    const mode = targetMode || state.currentMode.value as 'showcase' | 'professional';
 
-    // 缓存读取
+    // 快取讀取
     if (!forceRefresh) {
       const cached = cache.getCached(slug, mode);
       if (cached) {
@@ -84,16 +86,15 @@ export function useProjectDetail() {
       }
     }
 
-    // 第一次请求
+    // 第一次請求
     const firstResult = await performFetch(slug, mode);
     state.isLoading.value = false;
 
     if (firstResult.success) {
-      // 成功，无事发生
       return;
     }
 
-    // 如果是冷启动错误，开始重试
+    // 重試邏輯
     if (firstResult.errorType === 'cold') {
       retry.startRetry(async () => {
         state.isLoading.value = true;
@@ -102,7 +103,6 @@ export function useProjectDetail() {
         return result;
       });
     } else {
-      // 非冷启动错误（包括 404、接口异常），直接显示错误，不重试
       if (projectNotFound) {
         retry.setError(notFoundMessage);
       } else {
@@ -131,26 +131,20 @@ export function useProjectDetail() {
   };
 
   const switchMode = (mode: 'showcase' | 'professional', slug: string) => {
-    console.log('1. [switchMode 被點擊]', mode, slug);
-    
     state.currentMode.value = mode;
     state.showCaseStudy.value = false;
-    
-    console.log('2. [狀態已改變]', state.currentMode.value);
 
     debouncer.debounce(() => {
-      console.log('3. 🔥 [防抖結束，開始執行 loadProject]');
-      loadProject(slug);
+      // 傳入明確的 mode，防止快取誤判
+      loadProject(slug, false, mode); 
     });
   };
-
 
   const forceReload = (slug: string) => {
     retry.reset();
     loadProject(slug, true);
   };
 
-  // 提供给模板的错误信息（优先显示重试过程的错误，再显示 404）
   const detailError = computed(() => {
     if (projectNotFound) return notFoundMessage;
     if (retry.errorMessage.value) return retry.errorMessage.value;
@@ -158,22 +152,18 @@ export function useProjectDetail() {
   });
 
   return {
-    // 状态
     ...state,
-    // 方法
     loadProject,
     openCaseStudy,
     closeCaseStudy,
     switchMode,
     forceReload,
-    // 重试相关
     isRetrying: retry.isRetrying,
     countdown: retry.countdown,
     retryCount: retry.retryCount,
     maxRetry: retry.maxRetries,
     detailError,
     manualRetry: () => forceReload((window as any).__currentSlug || ''),
-    // 清理
     cleanup: () => {
       request.cancelPending();
       debouncer.cancel();

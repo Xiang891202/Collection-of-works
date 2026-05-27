@@ -161,9 +161,9 @@
 
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue';
-import type { CaseStudyDTO } from '../../../types/dto';
-import { formatText } from '../../../utils/textFormatter';
-import ImageCarousel from '../../../components/common/ImageCarousel.vue';
+import type { CaseStudyDTO } from '../../types/dto.ts';
+import { formatText } from '../../utils/textFormatter.ts';
+import ImageCarousel from '../../components/common/ImageCarousel.vue';
 
 const props = defineProps<{ 
   data: CaseStudyDTO; 
