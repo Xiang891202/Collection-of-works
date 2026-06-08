@@ -179,7 +179,7 @@ onMounted(() => {
 });
 
 const openedSections = ref<Record<string, boolean>>({
-  initialAssumption: true, // 預設展開初始假設
+  initialAssumption: false, // 都關起來讓使用者選擇
   iterationGoal: false,
   coreProblems: false,
   constraints: false,
