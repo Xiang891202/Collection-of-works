@@ -37,6 +37,7 @@
             <span class="tag">RESTful API</span>
             <span class="tag">JWT</span>
             <span class="tag">bcrypt</span>
+            <span class="tag">Java</span>
           </div>
         </div>
         <div class="tech-group">
